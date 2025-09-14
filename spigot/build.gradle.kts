@@ -17,6 +17,18 @@ java {
     toolchain.languageVersion = JavaLanguageVersion.of(17) // Use Java 17 toolchain
 }
 
+// Output Java 8-compatible bytecode for Java classes
+tasks.withType<JavaCompile>().configureEach {
+    options.release.set(8)
+}
+
+// Output Java 8-compatible bytecode (For Kotlin)
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile>().configureEach {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8)
+    }
+}
+
 tasks {
     runServer {
         minecraftVersion("1.18.2") // Configure the Minecraft server version.
