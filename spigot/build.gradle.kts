@@ -34,8 +34,8 @@ tasks {
 }
 
 bukkitPluginYaml {
-    name = "MCTemplate"
-    main = "example.plugin.template.Template"
-    authors.add("Author")
-    apiVersion = "1.18"
+    name = "MB-MatchVault"
+    main = "me.hosairis.matchvault.MatchVault"
+    authors.add("Hosairis")
+    apiVersion = "1.13"
 }

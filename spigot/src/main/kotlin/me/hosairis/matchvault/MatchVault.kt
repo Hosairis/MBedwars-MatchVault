@@ -1,14 +1,14 @@
-package example.plugin.template
+package me.hosairis.matchvault
 
 import org.bukkit.plugin.java.JavaPlugin
 
-class Template: JavaPlugin() {
+class MatchVault: JavaPlugin() {
     
     companion object {
-        private lateinit var instance: Template
+        private lateinit var instance: MatchVault
 //        private lateinit var metrics: Metrics
 
-        fun getInst(): Template {
+        fun getInst(): MatchVault {
             return instance
         }
     }

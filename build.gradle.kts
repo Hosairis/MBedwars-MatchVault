@@ -4,9 +4,9 @@ plugins {
 }
 
 allprojects {
-    group = "example.plugin"
+    group = "me.hosairis"
     version = "1.0.0"
-    description = "An example template for creating Minecraft plugins"
+    description = "Match history addon for MBedwars"
 
     repositories {
         mavenLocal() // Local Maven repository
