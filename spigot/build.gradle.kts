@@ -13,7 +13,7 @@ dependencies {
 
     compileOnly(libs.spigot)
 
-    // implementation(libs.bstats)
+    implementation(libs.bstats)
 }
 
 zapper {
@@ -51,9 +51,9 @@ tasks {
         }
     }
 
-//    shadowJar {
-//        relocate("org.bstats", "example.plugin.template.libs.bstats")
-//    }
+    shadowJar {
+        relocate("org.bstats", "me.hosairis.matchvault.libs.bstats")
+    }
 }
 
 bukkitPluginYaml {

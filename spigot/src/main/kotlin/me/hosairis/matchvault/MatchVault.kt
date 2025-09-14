@@ -1,13 +1,13 @@
 package me.hosairis.matchvault
 
-import org.bukkit.plugin.java.JavaPlugin
+import org.bstats.bukkit.Metrics
 import revxrsal.zapper.ZapperJavaPlugin
 
 class MatchVault: ZapperJavaPlugin() {
     
     companion object {
         private lateinit var instance: MatchVault
-//        private lateinit var metrics: Metrics
+        private lateinit var metrics: Metrics
 
         fun getInst(): MatchVault {
             return instance
@@ -18,11 +18,11 @@ class MatchVault: ZapperJavaPlugin() {
     override fun onEnable() {
         instance = this
 
-//        metrics = Metrics(getInst(), /* bStats ID Here */)
+        metrics = Metrics(getInst(), 27239)
     }
 
     // Called when the plugin is disabled (cleanup resources, save data).
     override fun onDisable() {
-//        metrics.shutdown()
+        metrics.shutdown()
     }
 }
