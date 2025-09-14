@@ -1,22 +1,21 @@
 # Add shared library versions here if needed, e.g.:
 [versions]
 kotlin = "2.2.20"                  # Kotlin plugin version
-shadow = "9.1.0"             # Shadow plugin version
-paperweight = "1.7.7"              # Paperweight plugin version
+shadow = "9.1.0"                   # Shadow plugin version
 bukkit-factory = "1.2.0"           # resource-factory plugin version
 run-paper = "2.3.1"                # run-task plugin version
 
-paper = "1.18.2-R0.1-SNAPSHOT"     # Paper server software version
+spigot = "1.8.8-R0.1-SNAPSHOT"     # Spigot server software version
 # bstats = "3.0.2"
 
 # Add shared libraries here if needed, e.g.:
 [libraries]
+spigot = { module = "org.spigotmc:spigot-api", version.ref = "spigot" }
 # bstats = { module = "org.bstats:bstats-bukkit", version.ref = "bstats" }        # bStats library
 
 # Add shared plugins here if needed, e.g.:
 [plugins]
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }                                            # Kotlin JVM plugin
 shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }                                                 # Shadow plugin
-paperweight = { id = "io.papermc.paperweight.userdev", version.ref = "paperweight" }                            # Paperweight plugin
 bukkit-factory = { id = "xyz.jpenilla.resource-factory-bukkit-convention", version.ref = "bukkit-factory" }     # resource-factory plugin
 run-paper = { id = "xyz.jpenilla.run-paper", version.ref = "run-paper" }                                        # run-task plugin
