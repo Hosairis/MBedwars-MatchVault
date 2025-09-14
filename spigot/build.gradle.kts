@@ -1,4 +1,5 @@
 plugins {
+    alias(libs.plugins.zapper)
     alias(libs.plugins.bukkit.factory)      // Bukkit resource factory plugin for generating plugin.yml at build time
     alias(libs.plugins.run.paper)           // The run-task plugin for running a test server and testing the plugin
 }
@@ -8,9 +9,20 @@ repositories {
 }
 
 dependencies {
+    zap("org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.2.20")
+
     compileOnly(libs.spigot)
 
     // implementation(libs.bstats)
+}
+
+zapper {
+    libsFolder = "libs"
+    relocationPrefix = "me.hosairis.matchvault"
+
+    repositories {
+        includeProjectRepositories()
+    }
 }
 
 java {

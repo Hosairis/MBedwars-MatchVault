@@ -1,8 +1,9 @@
 package me.hosairis.matchvault
 
 import org.bukkit.plugin.java.JavaPlugin
+import revxrsal.zapper.ZapperJavaPlugin
 
-class MatchVault: JavaPlugin() {
+class MatchVault: ZapperJavaPlugin() {
     
     companion object {
         private lateinit var instance: MatchVault
