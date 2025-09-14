@@ -1,7 +1,7 @@
 # Add shared library versions here if needed, e.g.:
 [versions]
-kotlin = "2.0.21"                  # Kotlin plugin version
-shadow = "9.0.0-beta6"             # Shadow plugin version
+kotlin = "2.2.20"                  # Kotlin plugin version
+shadow = "9.1.0"             # Shadow plugin version
 paperweight = "1.7.7"              # Paperweight plugin version
 bukkit-factory = "1.2.0"           # resource-factory plugin version
 run-paper = "2.3.1"                # run-task plugin version
