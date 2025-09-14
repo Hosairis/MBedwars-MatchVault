@@ -53,6 +53,8 @@ tasks {
 
     shadowJar {
         relocate("org.bstats", "me.hosairis.matchvault.libs.bstats")
+
+        minimize()
     }
 }
 
