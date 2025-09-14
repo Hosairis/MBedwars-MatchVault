@@ -6,12 +6,14 @@ plugins {
 
 repositories {
     maven("https://repo.papermc.io/repository/maven-public/")
+    maven("https://repo.marcely.de/repository/maven-public/")
 }
 
 dependencies {
     zap("org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.2.20")
 
     compileOnly(libs.spigot)
+    compileOnly(libs.mbedwars)
 
     implementation(libs.bstats)
 }
@@ -20,9 +22,7 @@ zapper {
     libsFolder = "libs"
     relocationPrefix = "me.hosairis.matchvault"
 
-    repositories {
-        includeProjectRepositories()
-    }
+    repositories { includeProjectRepositories() }
 }
 
 java {
@@ -63,4 +63,5 @@ bukkitPluginYaml {
     main = "me.hosairis.matchvault.MatchVault"
     authors.add("Hosairis")
     apiVersion = "1.13"
+    depend.add("MBedwars")
 }

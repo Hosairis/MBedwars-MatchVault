@@ -13,16 +13,18 @@ class MatchVault: ZapperJavaPlugin() {
             return instance
         }
     }
+    private lateinit var addon: MatchVaultAddon
 
-    // Called when the plugin is enabled (initialize resources, register events/commands).
     override fun onEnable() {
         instance = this
-
         metrics = Metrics(getInst(), 27239)
+
+        addon = MatchVaultAddon(this).registerAddon()
+        addon.registerModules()
     }
 
-    // Called when the plugin is disabled (cleanup resources, save data).
     override fun onDisable() {
         metrics.shutdown()
+        addon.unregisterModules()
     }
 }

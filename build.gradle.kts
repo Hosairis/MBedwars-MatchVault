@@ -23,11 +23,5 @@ subprojects {
         build {
             dependsOn(shadowJar) // Include shadowJar in the build lifecycle
         }
-
-        shadowJar {
-            relocate("kotlin", "example.plugin.kotlin")
-            relocate("org.jetbrains.annotations", "example.plugin.jetbrains.annotations")
-            relocate("org.intellij.lang.annotations", "example.plugin.intellij.lang.annotations")
-        }
     }
 }

@@ -8,11 +8,13 @@ run-paper = "2.3.1"                # run-task plugin version
 
 spigot = "1.8.8-R0.1-SNAPSHOT"     # Spigot server software version
 bstats = "3.0.2"
+mbedwars = "5.5.5"
 
 # Add shared libraries here if needed, e.g.:
 [libraries]
 spigot = { module = "org.spigotmc:spigot-api", version.ref = "spigot" }
 bstats = { module = "org.bstats:bstats-bukkit", version.ref = "bstats" }        # bStats library
+mbedwars = { module = "de.marcely.bedwars:API", version.ref = "mbedwars" }
 
 # Add shared plugins here if needed, e.g.:
 [plugins]
