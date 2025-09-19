@@ -10,7 +10,7 @@ repositories {
 }
 
 dependencies {
-    zap("org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.2.20")
+    zap("org.jetbrains.kotlin:kotlin-stdlib:2.2.20")
 
     compileOnly(libs.spigot)
     compileOnly(libs.mbedwars)
