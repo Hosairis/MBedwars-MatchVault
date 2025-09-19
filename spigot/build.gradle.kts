@@ -16,10 +16,12 @@ dependencies {
     compileOnly(libs.mbedwars)
 
     implementation(libs.bstats)
+
+    zap(libs.boostedyaml)
 }
 
 zapper {
-    libsFolder = "libs"
+    libsFolder = "../MBedwars/add-ons/MB-MatchVault/libs"
     relocationPrefix = "me.hosairis.matchvault"
 
     repositories { includeProjectRepositories() }
