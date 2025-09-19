@@ -1,6 +1,6 @@
 package me.hosairis.matchvault
 
-import me.hosairis.matchvault.sotrage.config.Config
+import me.hosairis.matchvault.storage.config.Config
 import org.bstats.bukkit.Metrics
 import revxrsal.zapper.ZapperJavaPlugin
 

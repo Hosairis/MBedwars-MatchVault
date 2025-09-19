@@ -1,4 +1,4 @@
-package me.hosairis.matchvault.sotrage.config
+package me.hosairis.matchvault.storage.config
 
 class Config private constructor() : AbstractConfig("config.yml") {
 

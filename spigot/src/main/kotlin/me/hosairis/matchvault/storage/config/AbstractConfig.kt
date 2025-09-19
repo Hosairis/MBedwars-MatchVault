@@ -1,4 +1,4 @@
-package me.hosairis.matchvault.sotrage.config
+package me.hosairis.matchvault.storage.config
 
 import dev.dejvokep.boostedyaml.YamlDocument
 import dev.dejvokep.boostedyaml.dvs.versioning.BasicVersioning
