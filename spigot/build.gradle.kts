@@ -18,6 +18,10 @@ dependencies {
     implementation(libs.bstats)
 
     zap(libs.boostedyaml)
+    zap(libs.hikaricp) { exclude("org.slf4j") }
+    zap(libs.exposed.core)
+    zap(libs.exposed.jdbc)
+    zap(libs.mariadb.java.client)
 }
 
 zapper {

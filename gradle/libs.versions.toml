@@ -10,6 +10,10 @@ spigot = "1.8.8-R0.1-SNAPSHOT"     # Spigot server software version
 bstats = "3.0.2"
 mbedwars = "5.5.5"
 boostedyaml = "1.3.6"
+hikaricp = "7.0.2"
+exposed-core = "1.0.0-rc-1"
+exposed-jdbc = "1.0.0-rc-1"
+mariadb-java-client = "3.5.6"
 
 # Add shared libraries here if needed, e.g.:
 [libraries]
@@ -17,6 +21,10 @@ spigot = { module = "org.spigotmc:spigot-api", version.ref = "spigot" }
 bstats = { module = "org.bstats:bstats-bukkit", version.ref = "bstats" }        # bStats library
 mbedwars = { module = "de.marcely.bedwars:API", version.ref = "mbedwars" }
 boostedyaml = { module = "dev.dejvokep:boosted-yaml", version.ref = "boostedyaml" }
+hikaricp = { module = "com.zaxxer:HikariCP", version.ref = "hikaricp" }
+exposed-core = { module = "org.jetbrains.exposed:exposed-core", version.ref = "exposed-core" }
+exposed-jdbc = { module = "org.jetbrains.exposed:exposed-jdbc", version.ref = "exposed-jdbc" }
+mariadb-java-client = { module = "org.mariadb.jdbc:mariadb-java-client", version.ref = "mariadb-java-client" }
 
 # Add shared plugins here if needed, e.g.:
 [plugins]
