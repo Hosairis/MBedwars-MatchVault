@@ -14,6 +14,7 @@ hikaricp = "7.0.2"
 exposed-core = "1.0.0-rc-1"
 exposed-jdbc = "1.0.0-rc-1"
 mariadb-java-client = "3.5.6"
+h2-database = "2.4.240"
 
 # Add shared libraries here if needed, e.g.:
 [libraries]
@@ -25,6 +26,7 @@ hikaricp = { module = "com.zaxxer:HikariCP", version.ref = "hikaricp" }
 exposed-core = { module = "org.jetbrains.exposed:exposed-core", version.ref = "exposed-core" }
 exposed-jdbc = { module = "org.jetbrains.exposed:exposed-jdbc", version.ref = "exposed-jdbc" }
 mariadb-java-client = { module = "org.mariadb.jdbc:mariadb-java-client", version.ref = "mariadb-java-client" }
+h2-database = { module = "com.h2database:h2", version.ref = "h2-database" }
 
 # Add shared plugins here if needed, e.g.:
 [plugins]
