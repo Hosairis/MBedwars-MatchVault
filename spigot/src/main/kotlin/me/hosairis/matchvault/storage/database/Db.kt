@@ -78,6 +78,21 @@ class Db {
 
             dataSource = HikariDataSource(hikariCfg)
             Database.connect(dataSource)
+
+            transaction {
+                SchemaUtils.create(
+                    Players, Matches, MatchTeams, MatchPlayers,
+                    ShopPurchases, UpgradePurchases, PlayerStats, Timelines, TimelineMetas)
+
+                val updateQueries = SchemaUtils.addMissingColumnsStatements(
+                    Players, Matches, MatchTeams, MatchPlayers,
+                    ShopPurchases, UpgradePurchases, PlayerStats, Timelines, TimelineMetas)
+                if (updateQueries.isNotEmpty()) {
+                    updateQueries.forEach { query ->
+                        exec(query)
+                    }
+                }
+            }
         }
 
         fun close() {
