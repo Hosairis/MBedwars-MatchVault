@@ -6,6 +6,8 @@ import me.hosairis.matchvault.MatchVault
 import me.hosairis.matchvault.storage.config.Config
 import org.bukkit.Bukkit
 import org.jetbrains.exposed.v1.jdbc.Database
+import org.jetbrains.exposed.v1.jdbc.SchemaUtils
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import java.io.File
 import javax.sql.DataSource
 
@@ -16,7 +18,7 @@ class Db {
 
         fun init() {
             val dbType = Config.DATABASE_TYPE.lowercase().takeIf {
-                it == "sqlite" || it == "mysql" || it == "mariadb"
+                it == "sqlite" || it == "h2" || it == "mysql" || it == "mariadb"
             } ?: run {
                 Bukkit.getLogger().severe("Unsupported database type: ${Config.DATABASE_TYPE}")
                 Bukkit.getPluginManager().disablePlugin(MatchVault.getInst())
@@ -33,11 +35,21 @@ class Db {
                         maximumPoolSize = 1
                         minimumIdle = 1
 
-                        val dbFile = File(MatchVault.getAddon().dataFolder, "data.db")
+                        val dbFile = File(MatchVault.getAddon().dataFolder, "data.sqlite.db")
                         dbFile.parentFile.mkdirs()
                         jdbcUrl = "jdbc:sqlite:${dbFile.absolutePath}"
 
                         connectionInitSql = "PRAGMA foreign_keys=ON; PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL;"
+                    }
+                    "h2" -> {
+                        driverClassName = "org.h2.Driver"
+                        maximumPoolSize = 4
+                        minimumIdle = 1
+
+                        val dbFile = File(MatchVault.getAddon().dataFolder, "data.h2")
+                        dbFile.parentFile.mkdirs()
+
+                        jdbcUrl = "jdbc:h2:file:${dbFile.absolutePath};MODE=MySQL;AUTO_SERVER=TRUE;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=TRUE;DATABASE_TO_UPPER=FALSE;LOCK_TIMEOUT=10000;TRACE_LEVEL_FILE=0"
                     }
                     "mysql", "mariadb" -> {
                         driverClassName = "org.mariadb.jdbc.Driver"
