@@ -57,6 +57,10 @@ object MatchPlayers : LongIdTable("match_players") {
     val resGold = long("res_gold").default(0)
     val resDiamond = long("res_diamond").default(0)
     val resEmerald = long("res_emerald").default(0)
+    val resIronSpawner = long("res_iron_sp").default(0)
+    val resGoldSpawner = long("res_gold_sp").default(0)
+    val resDiamondSpawner = long("res_diamond_sp").default(0)
+    val resEmeraldSpawner = long("res_emerald_sp").default(0)
     val won = bool("won").default(false)
     init { uniqueIndex(match, player) } // enforce one player entry per match
 }
@@ -91,6 +95,10 @@ object PlayerStats : LongIdTable("player_stats") {
     val resGold = long("res_gold").default(0)
     val resDiamond = long("res_diamond").default(0)
     val resEmerald = long("res_emerald").default(0)
+    val resIronSpawner = long("res_iron_sp").default(0)
+    val resGoldSpawner = long("res_gold_sp").default(0)
+    val resDiamondSpawner = long("res_diamond_sp").default(0)
+    val resEmeraldSpawner = long("res_emerald_sp").default(0)
 }
 
 object Timelines : LongIdTable("timelines") {
