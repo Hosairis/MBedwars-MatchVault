@@ -37,17 +37,17 @@ object Matches : LongIdTable("matches") {
 }
 
 object MatchTeams : LongIdTable("match_teams") {
-    val match = reference("match_id", Matches, onDelete = ReferenceOption.CASCADE).index()
-    val team = varchar("team", 16).index()
+    val matchId = reference("match_id", Matches, onDelete = ReferenceOption.CASCADE).index()
+    val teamId = varchar("team", 16).index()
     val bedDestroyedAt = long("bed_destroyed_at").nullable().index()
     val eliminatedAt = long("eliminated_at").nullable().index()
     val finalPlacement = integer("final_placement").nullable().index()
-    init { uniqueIndex(match, team) } // enforce one team per color per match
+    init { uniqueIndex(matchId, teamId) } // enforce one team per color per match
 }
 
 object MatchPlayers : LongIdTable("match_players") {
-    val match = reference("match_id", Matches, onDelete = ReferenceOption.CASCADE).index()
-    val player = reference("player_id", Players, onDelete = ReferenceOption.CASCADE).index()
+    val matchId = reference("match_id", Matches, onDelete = ReferenceOption.CASCADE).index()
+    val playerId = reference("player_id", Players, onDelete = ReferenceOption.CASCADE).index()
     val team = reference("team_id", MatchTeams, onDelete = ReferenceOption.CASCADE).index()
     val kills = integer("kills").default(0)
     val finalKills = integer("final_kills").default(0)
@@ -62,28 +62,28 @@ object MatchPlayers : LongIdTable("match_players") {
     val resDiamondSpawner = long("res_diamond_sp").default(0)
     val resEmeraldSpawner = long("res_emerald_sp").default(0)
     val won = bool("won").default(false)
-    init { uniqueIndex(match, player) } // enforce one player entry per match
+    init { uniqueIndex(matchId, playerId) } // enforce one player entry per match
 }
 
 object ShopPurchases : LongIdTable("shop_purchases") {
-    val match = reference("match_id", Matches, onDelete = ReferenceOption.CASCADE).index()
-    val player = reference("player_id", Players, onDelete = ReferenceOption.CASCADE).index()
-    val team = reference("team_id", MatchTeams, onDelete = ReferenceOption.CASCADE).index()
+    val matchId = reference("match_id", Matches, onDelete = ReferenceOption.CASCADE).index()
+    val playerId = reference("player_id", Players, onDelete = ReferenceOption.CASCADE).index()
+    val teamId = reference("team_id", MatchTeams, onDelete = ReferenceOption.CASCADE).index()
     val item = varchar("item", 64)
     val amount = integer("amount").default(1)
     val openCause = enumerationByName("open_cause", 32, ShopOpenCause::class)
 }
 
 object UpgradePurchases : LongIdTable("upgrade_purchases") {
-    val match = reference("match_id", Matches, onDelete = ReferenceOption.CASCADE).index()
-    val buyer = reference("buyer_id", Players, onDelete = ReferenceOption.CASCADE).index()
-    val team = reference("team_id", MatchTeams, onDelete = ReferenceOption.CASCADE).index()
+    val matchId = reference("match_id", Matches, onDelete = ReferenceOption.CASCADE).index()
+    val buyerId = reference("buyer_id", Players, onDelete = ReferenceOption.CASCADE).index()
+    val teamId = reference("team_id", MatchTeams, onDelete = ReferenceOption.CASCADE).index()
     val upgrade = varchar("upgrade", 64)
     val level = integer("level").default(1)
 }
 
 object PlayerStats : LongIdTable("player_stats") {
-    val player = reference("player_id", Players, onDelete = ReferenceOption.CASCADE).uniqueIndex()
+    val playerId = reference("player_id", Players, onDelete = ReferenceOption.CASCADE).uniqueIndex()
     val matchesPlayed = integer("matches_played").default(0)
     val wins = integer("wins").default(0)
     val losses = integer("losses").default(0)
@@ -102,16 +102,16 @@ object PlayerStats : LongIdTable("player_stats") {
 }
 
 object Timelines : LongIdTable("timelines") {
-    val match = reference("match_id", Matches, onDelete = ReferenceOption.CASCADE).index()
-    val player = reference("actor_id", Players, onDelete = ReferenceOption.SET_NULL).nullable().index()
-    val target = reference("target_id", Players, onDelete = ReferenceOption.SET_NULL).nullable().index()
-    val team = reference("team_id", MatchTeams, onDelete = ReferenceOption.CASCADE).nullable().index()
+    val matchId = reference("match_id", Matches, onDelete = ReferenceOption.CASCADE).index()
+    val playerId = reference("actor_id", Players, onDelete = ReferenceOption.SET_NULL).nullable().index()
+    val targetId = reference("target_id", Players, onDelete = ReferenceOption.SET_NULL).nullable().index()
+    val teamId = reference("team_id", MatchTeams, onDelete = ReferenceOption.CASCADE).nullable().index()
     val timestamp = long("timestamp").index()
     val type = enumerationByName("type", 32, EventType::class).index()
 }
 
 object TimelineMetas : LongIdTable("timeline_metas") {
-    val timeline = reference("timeline_id", Timelines, onDelete = ReferenceOption.CASCADE).index()
+    val timelineId = reference("timeline_id", Timelines, onDelete = ReferenceOption.CASCADE).index()
     val key = varchar("key", 64).index()
     val value = varchar("value", 255).index()
 }
