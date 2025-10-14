@@ -7,6 +7,7 @@ import org.jetbrains.exposed.v1.core.Transaction
 import org.jetbrains.exposed.v1.core.statements.BatchInsertStatement
 import org.jetbrains.exposed.v1.jdbc.batchInsert
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
+import java.util.concurrent.atomic.AtomicBoolean
 
 object DatabaseQueue {
 
@@ -15,72 +16,109 @@ object DatabaseQueue {
         data class Update(val action: Transaction.() -> Unit) : Operation
     }
 
-    private val operations = mutableListOf<Operation>()
+    private val operations = ArrayDeque<Operation>()
+    private val isFlushing = AtomicBoolean(false)
+    private const val MAX_FLUSH_DURATION_NANOS = 50_000_000L // ~50ms guard against async thread starvation.
     private val lock = Any()
 
     fun queueInsert(table: Table? = null, action: Transaction.(BatchInsertStatement?) -> Unit) {
-        synchronized(lock) { operations += Operation.Insert(table, action) }
+        synchronized(lock) { operations.addLast(Operation.Insert(table, action)) }
     }
 
     fun queueUpdate(action: Transaction.() -> Unit) {
-        synchronized(lock) { operations += Operation.Update(action) }
+        synchronized(lock) { operations.addLast(Operation.Update(action)) }
     }
 
     fun flush() {
-        val snapshot: List<Operation>
-        synchronized(lock) {
-            if (operations.isEmpty()) return
-            snapshot = operations.toList()
-            operations.clear()
-        }
+        if (!isFlushing.compareAndSet(false, true)) return
 
         try {
-            transaction {
-                var currentTable: Table? = null
-                val currentBatch = mutableListOf<Transaction.(BatchInsertStatement) -> Unit>()
+            val deadline = System.nanoTime() + MAX_FLUSH_DURATION_NANOS
 
-                fun flushBatch() {
-                    val table = currentTable
-                    if (table == null || currentBatch.isEmpty()) {
-                        currentBatch.clear()
-                        currentTable = null
-                        return
+            while (System.nanoTime() < deadline) {
+                val snapshot = synchronized(lock) {
+                    if (operations.isEmpty()) null else ArrayList<Operation>(operations.size).also { buffer ->
+                        while (operations.isNotEmpty()) {
+                            buffer += operations.removeFirst()
+                        }
                     }
+                } ?: break
 
-                    val rows = currentBatch.toList()
-                    currentBatch.clear()
-                    currentTable = null
+                var timedOut = false
+                var resumeIndex = snapshot.size
 
-                    table.batchInsert(rows) { action -> this@transaction.action(this) }
-                }
+                try {
+                    transaction {
+                        var currentTable: Table? = null
+                        val currentBatch = mutableListOf<Transaction.(BatchInsertStatement) -> Unit>()
 
-                snapshot.forEach { op ->
-                    when (op) {
-                        is Operation.Insert -> {
-                            if (op.table == null) {
-                                flushBatch()
-                                op.action(this, null)
-                            } else {
-                                if (currentTable != op.table) {
-                                    flushBatch()
-                                    currentTable = op.table
+                        fun flushBatch() {
+                            val table = currentTable
+                            if (table == null || currentBatch.isEmpty()) {
+                                currentTable = null
+                                return
+                            }
+
+                            val rows = currentBatch.toList()
+                            currentBatch.clear()
+                            currentTable = null
+
+                            table.batchInsert(rows) { action -> this@transaction.action(this) }
+                        }
+
+                        for (index in snapshot.indices) {
+                            if (System.nanoTime() >= deadline) {
+                                timedOut = true
+                                resumeIndex = index
+                                break
+                            }
+
+                            when (val op = snapshot[index]) {
+                                is Operation.Insert -> {
+                                    if (op.table == null) {
+                                        flushBatch()
+                                        op.action(this, null)
+                                    } else {
+                                        if (currentTable != op.table) {
+                                            flushBatch()
+                                            currentTable = op.table
+                                        }
+                                        currentBatch += { statement -> op.action(this, statement) }
+                                    }
                                 }
-                                currentBatch += { statement -> op.action(this, statement) }
+                                is Operation.Update -> {
+                                    flushBatch()
+                                    op.action(this)
+                                }
                             }
                         }
-                        is Operation.Update -> {
-                            flushBatch()
-                            op.action(this)
+
+                        flushBatch()
+                    }
+                } catch (e: Exception) {
+                    Bukkit.getLogger().warning("Database flush failed: ${e.message}")
+                    e.printStackTrace()
+                    synchronized(lock) {
+                        for (op in snapshot.asReversed()) {
+                            operations.addFirst(op)
                         }
                     }
+                    break
                 }
 
-                flushBatch()
+                if (timedOut) {
+                    if (resumeIndex < snapshot.size) {
+                        synchronized(lock) {
+                            for (i in snapshot.size - 1 downTo resumeIndex) {
+                                operations.addFirst(snapshot[i])
+                            }
+                        }
+                    }
+                    break
+                }
             }
-        } catch (e: Exception) {
-            Bukkit.getLogger().warning("Database flush failed: ${e.message}")
-            e.printStackTrace()
-            synchronized(lock) { operations.addAll(snapshot) }
+        } finally {
+            isFlushing.set(false)
         }
     }
 
