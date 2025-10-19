@@ -21,8 +21,6 @@ dependencies {
     zap(libs.hikaricp) { exclude("org.slf4j") }
     zap(libs.exposed.core)
     zap(libs.exposed.jdbc)
-//    zap(libs.exposed.migration.core)
-//    zap(libs.exposed.migration.jdbc)
     zap(libs.mariadb.java.client)
     zap(libs.h2.database)
 }
