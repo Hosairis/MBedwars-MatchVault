@@ -1,5 +1,6 @@
 server-name: "unknown"
 database:
+  # MySQL, MariaDB, H2, SQLite
   type: "H2"
   host: "localhost"
   port: 3306
@@ -8,7 +9,18 @@ database:
   database: "matchvault"
   parameters: "?useSSL=false&allowMultiQueries=true"
 
-track-timelines: true
+# Advanced setting regarding plugin logic/behaviour
+advanced:
+  # Enables detailed logs for debugging
+  debug: false
+  # Leave these as-is unless you understand the queue timing mechanics.
+  database:
+    # Ticks between scheduled queue flushes
+    flush-interval: 5
+    # Maximum duration (ns) a single flush is allowed to run
+    flush-duration: 50000000
+    # Queue operations processed before re-checking the flush deadline
+    time-check-stride: 20
 
 # DO NOT EDIT!
 config-version: 1
