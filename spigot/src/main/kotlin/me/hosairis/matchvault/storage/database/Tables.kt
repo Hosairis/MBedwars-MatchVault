@@ -38,11 +38,11 @@ object Matches : LongIdTable("matches") {
 
 object MatchTeams : LongIdTable("match_teams") {
     val matchId = reference("match_id", Matches, onDelete = ReferenceOption.CASCADE).index()
-    val teamId = varchar("team", 16).index()
+    val team = varchar("team", 16).index()
     val bedDestroyedAt = long("bed_destroyed_at").nullable().index()
     val eliminatedAt = long("eliminated_at").nullable().index()
     val finalPlacement = integer("final_placement").nullable().index()
-    init { uniqueIndex(matchId, teamId) } // enforce one team per color per match
+    init { uniqueIndex(matchId, team) } // enforce one team per color per match
 }
 
 object MatchPlayers : LongIdTable("match_players") {
