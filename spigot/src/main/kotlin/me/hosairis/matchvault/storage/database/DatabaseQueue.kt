@@ -18,11 +18,11 @@ object DatabaseQueue {
     private val lock = Any()
 
     private sealed interface Operation {
-        data class Insert(val table: Table?, val action: Transaction.(BatchInsertStatement?) -> Unit) : Operation
+        data class Insert(val table: Table, val action: Transaction.(BatchInsertStatement) -> Unit) : Operation
         data class Update(val action: Transaction.() -> Unit) : Operation
     }
 
-    fun queueInsert(table: Table? = null, action: Transaction.(BatchInsertStatement?) -> Unit) {
+    fun queueInsert(table: Table, action: Transaction.(BatchInsertStatement) -> Unit) {
         synchronized(lock) { operations.addLast(Operation.Insert(table, action)) }
     }
 
@@ -94,16 +94,11 @@ object DatabaseQueue {
 
                             when (val op = snapshot[index]) {
                                 is Operation.Insert -> {
-                                    if (op.table == null) {
+                                    if (currentTable != op.table) {
                                         flushBatch()
-                                        op.action(this, null)
-                                    } else {
-                                        if (currentTable != op.table) {
-                                            flushBatch()
-                                            currentTable = op.table
-                                        }
-                                        currentBatch += { statement -> op.action(this, statement) }
+                                        currentTable = op.table
                                     }
+                                    currentBatch += { statement -> op.action(this, statement) }
                                 }
                                 is Operation.Update -> {
                                     flushBatch()
