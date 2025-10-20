@@ -48,7 +48,7 @@ object MatchTeams : LongIdTable("match_teams") {
 object MatchPlayers : LongIdTable("match_players") {
     val matchId = reference("match_id", Matches, onDelete = ReferenceOption.CASCADE).index()
     val playerId = reference("player_id", Players, onDelete = ReferenceOption.CASCADE).index()
-    val team = reference("team_id", MatchTeams, onDelete = ReferenceOption.CASCADE).index()
+    val teamId = reference("team_id", MatchTeams, onDelete = ReferenceOption.CASCADE).index()
     val kills = integer("kills").default(0)
     val finalKills = integer("final_kills").default(0)
     val deaths = integer("deaths").default(0)
