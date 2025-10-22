@@ -25,15 +25,14 @@ object Players : LongIdTable("players") {
 
 object Matches : LongIdTable("matches") {
     val arenaName = varchar("arena_name", 64)        // arena.name from BedWars API
-    val worldName = varchar("world_name", 64)        // arena.gameworld.name
     val mode = integer("mode").index()
     val startedAt = long("started_at").index()
     val endedAt = long("ended_at").nullable()
     val duration = long("duration").nullable()
     val status = enumerationByName("status", 16, MatchStatus::class).default(MatchStatus.ONGOING).index()
-    val server = varchar("server", 64).default(Config.SERVER_NAME).index()
-    val winnerTeam = varchar("winner_team", 16).nullable()
     val isTie = bool("is_tie").default(false)
+    val winnerTeamId = reference("winner_team_id", MatchTeams, onDelete = ReferenceOption.CASCADE).nullable().index()
+    val server = varchar("server", 64).default(Config.SERVER_NAME).index()
 }
 
 object MatchTeams : LongIdTable("match_teams") {
