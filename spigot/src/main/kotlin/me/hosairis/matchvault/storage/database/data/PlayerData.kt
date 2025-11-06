@@ -20,6 +20,9 @@ data class PlayerData(
     var id: Long? = null
         private set
 
+    var stats: PlayerStatsData? = null
+        private set
+
     companion object {
         suspend fun read(uuid: UUID): PlayerData? = withContext(Dispatchers.IO) {
             transaction {
@@ -84,5 +87,10 @@ data class PlayerData(
                 false
             }
         }
+    }
+
+    suspend fun loadStats() {
+        val playerId = id ?: return
+        stats = PlayerStatsData.readByPlayerId(playerId)
     }
 }
