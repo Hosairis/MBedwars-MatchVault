@@ -18,7 +18,7 @@ enum class EventType {
 
 object Players : LongIdTable("players") {
     val name = varchar("name", 64).index()
-    val uuid = uuid("uuid").uniqueIndex()
+    val uuid = varchar("uuid", 36).uniqueIndex()
     val firstSeen = long("first_seen")
     val lastSeen = long("last_seen")
 }
