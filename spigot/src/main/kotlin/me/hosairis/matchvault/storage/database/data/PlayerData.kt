@@ -63,12 +63,11 @@ data class PlayerData(
     suspend fun update(updateFirstSeen: Boolean = false): Boolean = withContext(Dispatchers.IO) {
         transaction {
             try {
-                val rowsUpdated = Players.update({ Players.uuid eq uuid.toString() }) { statement ->
+                Players.update({ Players.uuid eq uuid.toString() }) { statement ->
                     statement[name] = this@PlayerData.name
                     if (updateFirstSeen) statement[firstSeen] = this@PlayerData.firstSeen
                     statement[lastSeen] = this@PlayerData.lastSeen
-                }
-                rowsUpdated > 0
+                } > 0
             } catch (ex: Exception) {
                 ex.printStackTrace()
                 false
@@ -79,7 +78,7 @@ data class PlayerData(
     suspend fun delete(): Boolean = withContext(Dispatchers.IO) {
         transaction {
             try {
-                Players.deleteWhere { Players.uuid eq uuid } > 0
+                Players.deleteWhere { Players.uuid eq uuid.toString() } > 0
             } catch (ex: Exception) {
                 ex.printStackTrace()
                 false
