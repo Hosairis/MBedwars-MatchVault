@@ -15,7 +15,7 @@ object CoroutineHelper {
     private val ioScope = CoroutineScope(Dispatchers.IO + job)
 
     // Launch a coroutine on the IO dispatcher (background thread)
-    fun launchAsync(block: suspend CoroutineScope.() -> Unit) {
+    fun runAsync(block: suspend CoroutineScope.() -> Unit) {
         ioScope.launch(block = block)
     }
 
