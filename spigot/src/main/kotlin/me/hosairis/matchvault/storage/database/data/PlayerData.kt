@@ -30,10 +30,10 @@ data class PlayerData(
                     .firstOrNull()
                     ?.let { row ->
                         PlayerData(
-                            row[Players.name],
-                            UUID.fromString(row[Players.uuid]),
-                            row[Players.firstSeen],
-                            row[Players.lastSeen]
+                            name = row[Players.name],
+                            uuid = UUID.fromString(row[Players.uuid]),
+                            firstSeen = row[Players.firstSeen],
+                            lastSeen = row[Players.lastSeen]
                         ).apply {
                             id = row[Players.id].value
                         }
@@ -45,11 +45,11 @@ data class PlayerData(
     suspend fun create(): Boolean = withContext(Dispatchers.IO) {
         transaction {
             try {
-                val newId = Players.insertAndGetId {
-                    it[Players.name] = this@PlayerData.name
-                    it[Players.uuid] = this@PlayerData.uuid.toString()
-                    it[Players.firstSeen] = this@PlayerData.firstSeen
-                    it[Players.lastSeen] = this@PlayerData.lastSeen
+                val newId = Players.insertAndGetId { statement ->
+                    statement[Players.name] = this@PlayerData.name
+                    statement[Players.uuid] = this@PlayerData.uuid.toString()
+                    statement[Players.firstSeen] = this@PlayerData.firstSeen
+                    statement[Players.lastSeen] = this@PlayerData.lastSeen
                 }
                 this@PlayerData.id = newId.value
                 true
@@ -63,10 +63,10 @@ data class PlayerData(
     suspend fun update(updateFirstSeen: Boolean = false): Boolean = withContext(Dispatchers.IO) {
         transaction {
             try {
-                val rowsUpdated = Players.update({ Players.uuid eq uuid.toString() }) {
-                    it[name] = this@PlayerData.name
-                    if (updateFirstSeen) it[firstSeen] = this@PlayerData.firstSeen
-                    it[lastSeen] = this@PlayerData.lastSeen
+                val rowsUpdated = Players.update({ Players.uuid eq uuid.toString() }) { statement ->
+                    statement[name] = this@PlayerData.name
+                    if (updateFirstSeen) statement[firstSeen] = this@PlayerData.firstSeen
+                    statement[lastSeen] = this@PlayerData.lastSeen
                 }
                 rowsUpdated > 0
             } catch (ex: Exception) {
@@ -79,8 +79,7 @@ data class PlayerData(
     suspend fun delete(): Boolean = withContext(Dispatchers.IO) {
         transaction {
             try {
-                val rowsDeleted = Players.deleteWhere { Players.uuid eq uuid }
-                rowsDeleted > 0
+                Players.deleteWhere { Players.uuid eq uuid } > 0
             } catch (ex: Exception) {
                 ex.printStackTrace()
                 false
