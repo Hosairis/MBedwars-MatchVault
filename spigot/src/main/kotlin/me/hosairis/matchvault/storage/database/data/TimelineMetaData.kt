@@ -1,0 +1,100 @@
+package me.hosairis.matchvault.storage.database.data
+
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import me.hosairis.matchvault.storage.database.TimelineMetas
+import me.hosairis.matchvault.storage.database.Timelines
+import org.jetbrains.exposed.v1.core.ResultRow
+import org.jetbrains.exposed.v1.core.dao.id.EntityID
+import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.jdbc.deleteWhere
+import org.jetbrains.exposed.v1.jdbc.insertAndGetId
+import org.jetbrains.exposed.v1.jdbc.select
+import org.jetbrains.exposed.v1.jdbc.selectAll
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
+import org.jetbrains.exposed.v1.jdbc.update
+
+data class TimelineMetaData(
+    val timelineId: Long,
+    var key: String,
+    var value: String
+) {
+    var id: Long? = null
+        private set
+
+    companion object {
+        suspend fun read(id: Long): TimelineMetaData? = withContext(Dispatchers.IO) {
+            transaction {
+                TimelineMetas
+                    .selectAll()
+                    .where { TimelineMetas.id eq id }
+                    .limit(1)
+                    .firstOrNull()
+                    ?.toData()
+            }
+        }
+
+        suspend fun readByTimelineId(timelineId: Long): List<TimelineMetaData> = withContext(Dispatchers.IO) {
+            transaction {
+                val timelineRef = EntityID(timelineId, Timelines)
+                TimelineMetas
+                    .selectAll()
+                    .where { TimelineMetas.timelineId eq timelineRef }
+                    .map { it.toData() }
+            }
+        }
+
+        private fun ResultRow.toData(): TimelineMetaData =
+            TimelineMetaData(
+                timelineId = this[TimelineMetas.timelineId].value,
+                key = this[TimelineMetas.key],
+                value = this[TimelineMetas.value]
+            ).apply {
+                id = this@toData[TimelineMetas.id].value
+            }
+    }
+
+    suspend fun create(): Boolean = withContext(Dispatchers.IO) {
+        transaction {
+            try {
+                val newId = TimelineMetas.insertAndGetId { statement ->
+                    statement[TimelineMetas.timelineId] = EntityID(this@TimelineMetaData.timelineId, Timelines)
+                    statement[TimelineMetas.key] = this@TimelineMetaData.key
+                    statement[TimelineMetas.value] = this@TimelineMetaData.value
+                }
+                this@TimelineMetaData.id = newId.value
+                true
+            } catch (ex: Exception) {
+                ex.printStackTrace()
+                false
+            }
+        }
+    }
+
+    suspend fun update(): Boolean = withContext(Dispatchers.IO) {
+        val recordId = id ?: return@withContext false
+        transaction {
+            try {
+                TimelineMetas.update({ TimelineMetas.id eq recordId }) { statement ->
+                    statement[TimelineMetas.key] = this@TimelineMetaData.key
+                    statement[TimelineMetas.value] = this@TimelineMetaData.value
+                } > 0
+            } catch (ex: Exception) {
+                ex.printStackTrace()
+                false
+            }
+        }
+    }
+
+    suspend fun delete(): Boolean = withContext(Dispatchers.IO) {
+        val recordId = id ?: return@withContext false
+        transaction {
+            try {
+                TimelineMetas.deleteWhere { TimelineMetas.id eq recordId } > 0
+            } catch (ex: Exception) {
+                ex.printStackTrace()
+                false
+            }
+        }
+    }
+}
