@@ -28,6 +28,21 @@ data class MatchData(
     var id: Long? = null
         private set
 
+    var teams: MutableList<MatchTeamData> = mutableListOf()
+        private set
+
+    var players: MutableList<MatchPlayerData> = mutableListOf()
+        private set
+
+    var shopPurchases: MutableList<ShopPurchaseData> = mutableListOf()
+        private set
+
+    var upgradePurchases: MutableList<UpgradePurchaseData> = mutableListOf()
+        private set
+
+    var timelines: MutableList<TimelineData> = mutableListOf()
+        private set
+
     companion object {
         suspend fun read(id: Long): MatchData? = withContext(Dispatchers.IO) {
             transaction {
@@ -110,5 +125,35 @@ data class MatchData(
                 false
             }
         }
+    }
+
+    suspend fun loadTeams(){
+        val matchId = id ?: return
+        teams.clear()
+        teams.addAll(MatchTeamData.readByMatchId(matchId))
+    }
+
+    suspend fun loadPlayers() {
+        val matchId = id ?: return
+        players.clear()
+        players.addAll(MatchPlayerData.readByMatchId(matchId))
+    }
+
+    suspend fun loadShopPurchases() {
+        val matchId = id ?: return
+        shopPurchases.clear()
+        shopPurchases.addAll(ShopPurchaseData.readByMatchId(matchId))
+    }
+
+    suspend fun loadUpgradePurchases() {
+        val matchId = id ?: return
+        upgradePurchases.clear()
+        upgradePurchases.addAll(UpgradePurchaseData.readByMatchId(matchId))
+    }
+
+    suspend fun loadTimelines() {
+        val matchId = id ?: return
+        timelines.clear()
+        timelines.addAll(TimelineData.readByMatchId(matchId))
     }
 }
