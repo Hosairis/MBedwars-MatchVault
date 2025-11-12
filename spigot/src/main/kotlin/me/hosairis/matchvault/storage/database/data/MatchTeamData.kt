@@ -7,6 +7,7 @@ import me.hosairis.matchvault.storage.database.Matches
 import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.statements.UpdateBuilder
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insertAndGetId
 import org.jetbrains.exposed.v1.jdbc.selectAll
@@ -77,15 +78,19 @@ data class MatchTeamData(
         }
     }
 
-    suspend fun update(): Boolean = withContext(Dispatchers.IO) {
+    suspend fun update(builder: (UpdateBuilder<Int>.(MatchTeamData) -> Unit)? = null): Boolean = withContext(Dispatchers.IO) {
         val teamId = id ?: return@withContext false
         transaction {
             try {
                 MatchTeams.update({ MatchTeams.id eq teamId }) { statement ->
-                    statement[MatchTeams.team] = this@MatchTeamData.team
-                    statement[MatchTeams.bedDestroyedAt] = this@MatchTeamData.bedDestroyedAt
-                    statement[MatchTeams.eliminatedAt] = this@MatchTeamData.eliminatedAt
-                    statement[MatchTeams.finalPlacement] = this@MatchTeamData.finalPlacement
+                    if (builder == null) {
+                        statement[MatchTeams.team] = this@MatchTeamData.team
+                        statement[MatchTeams.bedDestroyedAt] = this@MatchTeamData.bedDestroyedAt
+                        statement[MatchTeams.eliminatedAt] = this@MatchTeamData.eliminatedAt
+                        statement[MatchTeams.finalPlacement] = this@MatchTeamData.finalPlacement
+                    } else {
+                        builder.invoke(statement, this@MatchTeamData)
+                    }
                 } > 0
             } catch (ex: Exception) {
                 ex.printStackTrace()

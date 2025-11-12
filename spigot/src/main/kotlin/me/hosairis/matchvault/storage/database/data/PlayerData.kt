@@ -4,6 +4,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.hosairis.matchvault.storage.database.Players
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.statements.UpdateBuilder
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insertAndGetId
 import org.jetbrains.exposed.v1.jdbc.selectAll
@@ -63,13 +64,20 @@ data class PlayerData(
         }
     }
 
-    suspend fun update(updateFirstSeen: Boolean = false): Boolean = withContext(Dispatchers.IO) {
+    suspend fun update(
+        updateFirstSeen: Boolean = false,
+        builder: (UpdateBuilder<Int>.(PlayerData) -> Unit)? = null
+    ): Boolean = withContext(Dispatchers.IO) {
         transaction {
             try {
                 Players.update({ Players.uuid eq uuid.toString() }) { statement ->
-                    statement[name] = this@PlayerData.name
-                    if (updateFirstSeen) statement[firstSeen] = this@PlayerData.firstSeen
-                    statement[lastSeen] = this@PlayerData.lastSeen
+                    if (builder == null) {
+                        statement[Players.name] = this@PlayerData.name
+                        if (updateFirstSeen) statement[Players.firstSeen] = this@PlayerData.firstSeen
+                        statement[Players.lastSeen] = this@PlayerData.lastSeen
+                    } else {
+                        builder.invoke(statement, this@PlayerData)
+                    }
                 } > 0
             } catch (ex: Exception) {
                 ex.printStackTrace()

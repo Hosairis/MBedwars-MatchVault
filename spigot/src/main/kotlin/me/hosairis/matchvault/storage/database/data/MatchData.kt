@@ -8,6 +8,7 @@ import me.hosairis.matchvault.storage.database.MatchTeams
 import me.hosairis.matchvault.storage.database.Matches
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.statements.UpdateBuilder
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insertAndGetId
 import org.jetbrains.exposed.v1.jdbc.selectAll
@@ -93,20 +94,24 @@ data class MatchData(
         }
     }
 
-    suspend fun update(): Boolean = withContext(Dispatchers.IO) {
+    suspend fun update(builder: (UpdateBuilder<Int>.(MatchData) -> Unit)? = null): Boolean = withContext(Dispatchers.IO) {
         val matchId = id ?: return@withContext false
         transaction {
             try {
                 Matches.update({ Matches.id eq matchId }) { statement ->
-                    statement[Matches.arenaName] = this@MatchData.arenaName
-                    statement[Matches.mode] = this@MatchData.mode
-                    statement[Matches.startedAt] = this@MatchData.startedAt
-                    statement[Matches.endedAt] = this@MatchData.endedAt
-                    statement[Matches.duration] = this@MatchData.duration
-                    statement[Matches.status] = this@MatchData.status
-                    statement[Matches.isTie] = this@MatchData.isTie
-                    statement[Matches.winnerTeamId] = this@MatchData.winnerTeamId?.let { EntityID(it, MatchTeams) }
-                    statement[Matches.server] = this@MatchData.server
+                    if (builder == null) {
+                        statement[Matches.arenaName] = this@MatchData.arenaName
+                        statement[Matches.mode] = this@MatchData.mode
+                        statement[Matches.startedAt] = this@MatchData.startedAt
+                        statement[Matches.endedAt] = this@MatchData.endedAt
+                        statement[Matches.duration] = this@MatchData.duration
+                        statement[Matches.status] = this@MatchData.status
+                        statement[Matches.isTie] = this@MatchData.isTie
+                        statement[Matches.winnerTeamId] = this@MatchData.winnerTeamId?.let { EntityID(it, MatchTeams) }
+                        statement[Matches.server] = this@MatchData.server
+                    } else {
+                        builder.invoke(statement, this@MatchData)
+                    }
                 } > 0
             } catch (ex: Exception) {
                 ex.printStackTrace()

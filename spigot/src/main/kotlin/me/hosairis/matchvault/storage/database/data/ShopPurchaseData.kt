@@ -10,6 +10,7 @@ import me.hosairis.matchvault.storage.database.ShopPurchases
 import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.statements.UpdateBuilder
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insertAndGetId
 import org.jetbrains.exposed.v1.jdbc.select
@@ -103,14 +104,18 @@ data class ShopPurchaseData(
         }
     }
 
-    suspend fun update(): Boolean = withContext(Dispatchers.IO) {
+    suspend fun update(builder: (UpdateBuilder<Int>.(ShopPurchaseData) -> Unit)? = null): Boolean = withContext(Dispatchers.IO) {
         val recordId = id ?: return@withContext false
         transaction {
             try {
                 ShopPurchases.update({ ShopPurchases.id eq recordId }) { statement ->
-                    statement[ShopPurchases.item] = this@ShopPurchaseData.item
-                    statement[ShopPurchases.amount] = this@ShopPurchaseData.amount
-                    statement[ShopPurchases.openCause] = this@ShopPurchaseData.openCause
+                    if (builder == null) {
+                        statement[ShopPurchases.item] = this@ShopPurchaseData.item
+                        statement[ShopPurchases.amount] = this@ShopPurchaseData.amount
+                        statement[ShopPurchases.openCause] = this@ShopPurchaseData.openCause
+                    } else {
+                        builder.invoke(statement, this@ShopPurchaseData)
+                    }
                 } > 0
             } catch (ex: Exception) {
                 ex.printStackTrace()

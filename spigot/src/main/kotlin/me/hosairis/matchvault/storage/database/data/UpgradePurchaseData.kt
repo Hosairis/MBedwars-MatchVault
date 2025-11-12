@@ -9,6 +9,7 @@ import me.hosairis.matchvault.storage.database.UpgradePurchases
 import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.statements.UpdateBuilder
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insertAndGetId
 import org.jetbrains.exposed.v1.jdbc.select
@@ -99,13 +100,17 @@ data class UpgradePurchaseData(
         }
     }
 
-    suspend fun update(): Boolean = withContext(Dispatchers.IO) {
+    suspend fun update(builder: (UpdateBuilder<Int>.(UpgradePurchaseData) -> Unit)? = null): Boolean = withContext(Dispatchers.IO) {
         val recordId = id ?: return@withContext false
         transaction {
             try {
                 UpgradePurchases.update({ UpgradePurchases.id eq recordId }) { statement ->
-                    statement[UpgradePurchases.upgrade] = this@UpgradePurchaseData.upgrade
-                    statement[UpgradePurchases.level] = this@UpgradePurchaseData.level
+                    if (builder == null) {
+                        statement[UpgradePurchases.upgrade] = this@UpgradePurchaseData.upgrade
+                        statement[UpgradePurchases.level] = this@UpgradePurchaseData.level
+                    } else {
+                        builder.invoke(statement, this@UpgradePurchaseData)
+                    }
                 } > 0
             } catch (ex: Exception) {
                 ex.printStackTrace()

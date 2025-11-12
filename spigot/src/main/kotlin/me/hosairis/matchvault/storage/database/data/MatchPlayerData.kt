@@ -9,10 +9,9 @@ import me.hosairis.matchvault.storage.database.Players
 import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
-import org.jetbrains.exposed.v1.core.statements.DeleteStatement.Companion.where
+import org.jetbrains.exposed.v1.core.statements.UpdateBuilder
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insertAndGetId
-import org.jetbrains.exposed.v1.jdbc.select
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import org.jetbrains.exposed.v1.jdbc.update
@@ -133,24 +132,28 @@ data class MatchPlayerData(
         }
     }
 
-    suspend fun update(): Boolean = withContext(Dispatchers.IO) {
+    suspend fun update(builder: (UpdateBuilder<Int>.(MatchPlayerData) -> Unit)? = null): Boolean = withContext(Dispatchers.IO) {
         val recordId = id ?: return@withContext false
         transaction {
             try {
                 MatchPlayers.update({ MatchPlayers.id eq recordId }) { statement ->
-                    statement[MatchPlayers.kills] = this@MatchPlayerData.kills
-                    statement[MatchPlayers.finalKills] = this@MatchPlayerData.finalKills
-                    statement[MatchPlayers.deaths] = this@MatchPlayerData.deaths
-                    statement[MatchPlayers.bedsBroken] = this@MatchPlayerData.bedsBroken
-                    statement[MatchPlayers.resIron] = this@MatchPlayerData.resIron
-                    statement[MatchPlayers.resGold] = this@MatchPlayerData.resGold
-                    statement[MatchPlayers.resDiamond] = this@MatchPlayerData.resDiamond
-                    statement[MatchPlayers.resEmerald] = this@MatchPlayerData.resEmerald
-                    statement[MatchPlayers.resIronSpawner] = this@MatchPlayerData.resIronSpawner
-                    statement[MatchPlayers.resGoldSpawner] = this@MatchPlayerData.resGoldSpawner
-                    statement[MatchPlayers.resDiamondSpawner] = this@MatchPlayerData.resDiamondSpawner
-                    statement[MatchPlayers.resEmeraldSpawner] = this@MatchPlayerData.resEmeraldSpawner
-                    statement[MatchPlayers.won] = this@MatchPlayerData.won
+                    if (builder == null) {
+                        statement[MatchPlayers.kills] = this@MatchPlayerData.kills
+                        statement[MatchPlayers.finalKills] = this@MatchPlayerData.finalKills
+                        statement[MatchPlayers.deaths] = this@MatchPlayerData.deaths
+                        statement[MatchPlayers.bedsBroken] = this@MatchPlayerData.bedsBroken
+                        statement[MatchPlayers.resIron] = this@MatchPlayerData.resIron
+                        statement[MatchPlayers.resGold] = this@MatchPlayerData.resGold
+                        statement[MatchPlayers.resDiamond] = this@MatchPlayerData.resDiamond
+                        statement[MatchPlayers.resEmerald] = this@MatchPlayerData.resEmerald
+                        statement[MatchPlayers.resIronSpawner] = this@MatchPlayerData.resIronSpawner
+                        statement[MatchPlayers.resGoldSpawner] = this@MatchPlayerData.resGoldSpawner
+                        statement[MatchPlayers.resDiamondSpawner] = this@MatchPlayerData.resDiamondSpawner
+                        statement[MatchPlayers.resEmeraldSpawner] = this@MatchPlayerData.resEmeraldSpawner
+                        statement[MatchPlayers.won] = this@MatchPlayerData.won
+                    } else {
+                        builder.invoke(statement, this@MatchPlayerData)
+                    }
                 } > 0
             } catch (ex: Exception) {
                 ex.printStackTrace()

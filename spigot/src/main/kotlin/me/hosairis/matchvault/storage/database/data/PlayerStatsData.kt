@@ -7,6 +7,7 @@ import me.hosairis.matchvault.storage.database.Players
 import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.statements.UpdateBuilder
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insertAndGetId
 import org.jetbrains.exposed.v1.jdbc.select
@@ -112,26 +113,30 @@ data class PlayerStatsData(
         }
     }
 
-    suspend fun update(): Boolean = withContext(Dispatchers.IO) {
+    suspend fun update(builder: (UpdateBuilder<Int>.(PlayerStatsData) -> Unit)? = null): Boolean = withContext(Dispatchers.IO) {
         val playerRef = EntityID(playerId, Players)
         transaction {
             try {
                 PlayerStats.update({ PlayerStats.playerId eq playerRef }) { statement ->
-                    statement[PlayerStats.matchesPlayed] = this@PlayerStatsData.matchesPlayed
-                    statement[PlayerStats.wins] = this@PlayerStatsData.wins
-                    statement[PlayerStats.losses] = this@PlayerStatsData.losses
-                    statement[PlayerStats.kills] = this@PlayerStatsData.kills
-                    statement[PlayerStats.finalKills] = this@PlayerStatsData.finalKills
-                    statement[PlayerStats.deaths] = this@PlayerStatsData.deaths
-                    statement[PlayerStats.bedsBroken] = this@PlayerStatsData.bedsBroken
-                    statement[PlayerStats.resIron] = this@PlayerStatsData.resIron
-                    statement[PlayerStats.resGold] = this@PlayerStatsData.resGold
-                    statement[PlayerStats.resDiamond] = this@PlayerStatsData.resDiamond
-                    statement[PlayerStats.resEmerald] = this@PlayerStatsData.resEmerald
-                    statement[PlayerStats.resIronSpawner] = this@PlayerStatsData.resIronSpawner
-                    statement[PlayerStats.resGoldSpawner] = this@PlayerStatsData.resGoldSpawner
-                    statement[PlayerStats.resDiamondSpawner] = this@PlayerStatsData.resDiamondSpawner
-                    statement[PlayerStats.resEmeraldSpawner] = this@PlayerStatsData.resEmeraldSpawner
+                    if (builder == null) {
+                        statement[PlayerStats.matchesPlayed] = this@PlayerStatsData.matchesPlayed
+                        statement[PlayerStats.wins] = this@PlayerStatsData.wins
+                        statement[PlayerStats.losses] = this@PlayerStatsData.losses
+                        statement[PlayerStats.kills] = this@PlayerStatsData.kills
+                        statement[PlayerStats.finalKills] = this@PlayerStatsData.finalKills
+                        statement[PlayerStats.deaths] = this@PlayerStatsData.deaths
+                        statement[PlayerStats.bedsBroken] = this@PlayerStatsData.bedsBroken
+                        statement[PlayerStats.resIron] = this@PlayerStatsData.resIron
+                        statement[PlayerStats.resGold] = this@PlayerStatsData.resGold
+                        statement[PlayerStats.resDiamond] = this@PlayerStatsData.resDiamond
+                        statement[PlayerStats.resEmerald] = this@PlayerStatsData.resEmerald
+                        statement[PlayerStats.resIronSpawner] = this@PlayerStatsData.resIronSpawner
+                        statement[PlayerStats.resGoldSpawner] = this@PlayerStatsData.resGoldSpawner
+                        statement[PlayerStats.resDiamondSpawner] = this@PlayerStatsData.resDiamondSpawner
+                        statement[PlayerStats.resEmeraldSpawner] = this@PlayerStatsData.resEmeraldSpawner
+                    } else {
+                        builder.invoke(statement, this@PlayerStatsData)
+                    }
                 } > 0
             } catch (ex: Exception) {
                 ex.printStackTrace()

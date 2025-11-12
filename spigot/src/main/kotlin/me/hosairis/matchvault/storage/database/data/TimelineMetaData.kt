@@ -7,6 +7,7 @@ import me.hosairis.matchvault.storage.database.Timelines
 import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.statements.UpdateBuilder
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insertAndGetId
 import org.jetbrains.exposed.v1.jdbc.select
@@ -71,13 +72,17 @@ data class TimelineMetaData(
         }
     }
 
-    suspend fun update(): Boolean = withContext(Dispatchers.IO) {
+    suspend fun update(builder: (UpdateBuilder<Int>.(TimelineMetaData) -> Unit)? = null): Boolean = withContext(Dispatchers.IO) {
         val recordId = id ?: return@withContext false
         transaction {
             try {
                 TimelineMetas.update({ TimelineMetas.id eq recordId }) { statement ->
-                    statement[TimelineMetas.key] = this@TimelineMetaData.key
-                    statement[TimelineMetas.value] = this@TimelineMetaData.value
+                    if (builder == null) {
+                        statement[TimelineMetas.key] = this@TimelineMetaData.key
+                        statement[TimelineMetas.value] = this@TimelineMetaData.value
+                    } else {
+                        builder.invoke(statement, this@TimelineMetaData)
+                    }
                 } > 0
             } catch (ex: Exception) {
                 ex.printStackTrace()
