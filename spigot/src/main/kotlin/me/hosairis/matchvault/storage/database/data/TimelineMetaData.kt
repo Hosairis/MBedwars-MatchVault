@@ -10,7 +10,6 @@ import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.statements.UpdateBuilder
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insertAndGetId
-import org.jetbrains.exposed.v1.jdbc.select
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import org.jetbrains.exposed.v1.jdbc.update
@@ -42,6 +41,53 @@ data class TimelineMetaData(
                     .selectAll()
                     .where { TimelineMetas.timelineId eq timelineRef }
                     .map { it.toData() }
+            }
+        }
+
+        suspend fun update(
+            id: Long,
+            builder: UpdateBuilder<Int>.(fetchRow: () -> ResultRow?) -> Unit
+        ): Boolean = withContext(Dispatchers.IO) {
+            transaction {
+                try {
+                    TimelineMetas.update({ TimelineMetas.id eq id }) { statement ->
+                        val fetchRow = {
+                            TimelineMetas
+                                .selectAll()
+                                .where { TimelineMetas.id eq id }
+                                .limit(1)
+                                .firstOrNull()
+                        }
+                        builder(statement, fetchRow)
+                    } > 0
+                } catch (ex: Exception) {
+                    ex.printStackTrace()
+                    false
+                }
+            }
+        }
+
+        suspend fun updateByTimelineId(
+            timelineId: Long,
+            builder: UpdateBuilder<Int>.(fetchRow: () -> ResultRow?) -> Unit
+        ): Boolean = withContext(Dispatchers.IO) {
+            transaction {
+                try {
+                    val timelineRef = EntityID(timelineId, Timelines)
+                    TimelineMetas.update({ TimelineMetas.timelineId eq timelineRef }) { statement ->
+                        val fetchRow = {
+                            TimelineMetas
+                                .selectAll()
+                                .where { TimelineMetas.timelineId eq timelineRef }
+                                .limit(1)
+                                .firstOrNull()
+                        }
+                        builder(statement, fetchRow)
+                    } > 0
+                } catch (ex: Exception) {
+                    ex.printStackTrace()
+                    false
+                }
             }
         }
 

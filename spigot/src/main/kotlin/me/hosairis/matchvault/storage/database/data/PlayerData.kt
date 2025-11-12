@@ -3,6 +3,7 @@ package me.hosairis.matchvault.storage.database.data
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.hosairis.matchvault.storage.database.Players
+import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.statements.UpdateBuilder
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
@@ -42,6 +43,29 @@ data class PlayerData(
                             id = row[Players.id].value
                         }
                     }
+            }
+        }
+
+        suspend fun update(
+            uuid: UUID,
+            builder: UpdateBuilder<Int>.(fetchRow: () -> ResultRow?) -> Unit
+        ): Boolean = withContext(Dispatchers.IO) {
+            transaction {
+                try {
+                    Players.update({ Players.uuid eq uuid.toString() }) { statement ->
+                        val fetchRow = {
+                            Players
+                                .selectAll()
+                                .where { Players.uuid eq uuid.toString() }
+                                .limit(1)
+                                .firstOrNull()
+                        }
+                        builder(statement, fetchRow)
+                    } > 0
+                } catch (ex: Exception) {
+                    ex.printStackTrace()
+                    false
+                }
             }
         }
     }

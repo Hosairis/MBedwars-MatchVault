@@ -11,7 +11,6 @@ import org.jetbrains.exposed.v1.core.statements.UpdateBuilder
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insertAndGetId
 import org.jetbrains.exposed.v1.jdbc.selectAll
-import org.jetbrains.exposed.v1.jdbc.select
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import org.jetbrains.exposed.v1.jdbc.update
 
@@ -44,6 +43,53 @@ data class MatchTeamData(
                     .selectAll()
                     .where { MatchTeams.matchId eq matchRef }
                     .map { it.toData() }
+            }
+        }
+
+        suspend fun update(
+            id: Long,
+            builder: UpdateBuilder<Int>.(fetchRow: () -> ResultRow?) -> Unit
+        ): Boolean = withContext(Dispatchers.IO) {
+            transaction {
+                try {
+                    MatchTeams.update({ MatchTeams.id eq id }) { statement ->
+                        val fetchRow = {
+                            MatchTeams
+                                .selectAll()
+                                .where { MatchTeams.id eq id }
+                                .limit(1)
+                                .firstOrNull()
+                        }
+                        builder(statement, fetchRow)
+                    } > 0
+                } catch (ex: Exception) {
+                    ex.printStackTrace()
+                    false
+                }
+            }
+        }
+
+        suspend fun updateByMatchId(
+            matchId: Long,
+            builder: UpdateBuilder<Int>.(fetchRow: () -> ResultRow?) -> Unit
+        ): Boolean = withContext(Dispatchers.IO) {
+            transaction {
+                try {
+                    val matchRef = EntityID(matchId, Matches)
+                    MatchTeams.update({ MatchTeams.matchId eq matchRef }) { statement ->
+                        val fetchRow = {
+                            MatchTeams
+                                .selectAll()
+                                .where { MatchTeams.matchId eq matchRef }
+                                .limit(1)
+                                .firstOrNull()
+                        }
+                        builder(statement, fetchRow)
+                    } > 0
+                } catch (ex: Exception) {
+                    ex.printStackTrace()
+                    false
+                }
             }
         }
 

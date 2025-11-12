@@ -16,7 +16,6 @@ import org.jetbrains.exposed.v1.jdbc.insertAndGetId
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import org.jetbrains.exposed.v1.jdbc.update
-import java.util.concurrent.CopyOnWriteArrayList
 
 data class TimelineData(
     val matchId: Long,
@@ -71,6 +70,101 @@ data class TimelineData(
                     .selectAll()
                     .where { Timelines.targetId eq targetRef }
                     .map { it.toData() }
+            }
+        }
+
+        suspend fun update(
+            id: Long,
+            builder: UpdateBuilder<Int>.(fetchRow: () -> ResultRow?) -> Unit
+        ): Boolean = withContext(Dispatchers.IO) {
+            transaction {
+                try {
+                    Timelines.update({ Timelines.id eq id }) { statement ->
+                        val fetchRow = {
+                            Timelines
+                                .selectAll()
+                                .where { Timelines.id eq id }
+                                .limit(1)
+                                .firstOrNull()
+                        }
+                        builder(statement, fetchRow)
+                    } > 0
+                } catch (ex: Exception) {
+                    ex.printStackTrace()
+                    false
+                }
+            }
+        }
+
+        suspend fun updateByMatchId(
+            matchId: Long,
+            builder: UpdateBuilder<Int>.(fetchRow: () -> ResultRow?) -> Unit
+        ): Boolean = withContext(Dispatchers.IO) {
+            transaction {
+                try {
+                    val matchRef = EntityID(matchId, Matches)
+                    Timelines.update({ Timelines.matchId eq matchRef }) { statement ->
+                        val fetchRow = {
+                            Timelines
+                                .selectAll()
+                                .where { Timelines.matchId eq matchRef }
+                                .limit(1)
+                                .firstOrNull()
+                        }
+                        builder(statement, fetchRow)
+                    } > 0
+                } catch (ex: Exception) {
+                    ex.printStackTrace()
+                    false
+                }
+            }
+        }
+
+        suspend fun updateByPlayerId(
+            playerId: Long,
+            builder: UpdateBuilder<Int>.(fetchRow: () -> ResultRow?) -> Unit
+        ): Boolean = withContext(Dispatchers.IO) {
+            transaction {
+                try {
+                    val playerRef = EntityID(playerId, Players)
+                    Timelines.update({ Timelines.playerId eq playerRef }) { statement ->
+                        val fetchRow = {
+                            Timelines
+                                .selectAll()
+                                .where { Timelines.playerId eq playerRef }
+                                .limit(1)
+                                .firstOrNull()
+                        }
+                        builder(statement, fetchRow)
+                    } > 0
+                } catch (ex: Exception) {
+                    ex.printStackTrace()
+                    false
+                }
+            }
+        }
+
+        suspend fun updateByTargetId(
+            targetId: Long,
+            builder: UpdateBuilder<Int>.(fetchRow: () -> ResultRow?) -> Unit
+        ): Boolean = withContext(Dispatchers.IO) {
+            transaction {
+                try {
+                    val targetRef = EntityID(targetId, Players)
+                    Timelines.update({ Timelines.targetId eq targetRef }) { statement ->
+                        val fetchRow = {
+                            Timelines
+                                .selectAll()
+                                .where { Timelines.targetId eq targetRef }
+                                .limit(1)
+                                .firstOrNull()
+                        }
+                        builder(statement, fetchRow)
+                    } > 0
+                } catch (ex: Exception) {
+                    ex.printStackTrace()
+                    false
+                }
             }
         }
 

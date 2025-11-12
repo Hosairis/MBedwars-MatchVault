@@ -10,7 +10,6 @@ import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.statements.UpdateBuilder
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insertAndGetId
-import org.jetbrains.exposed.v1.jdbc.select
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import org.jetbrains.exposed.v1.jdbc.update
@@ -57,6 +56,53 @@ data class PlayerStatsData(
                     .limit(1)
                     .firstOrNull()
                     ?.toData()
+            }
+        }
+
+        suspend fun update(
+            id: Long,
+            builder: UpdateBuilder<Int>.(fetchRow: () -> ResultRow?) -> Unit
+        ): Boolean = withContext(Dispatchers.IO) {
+            transaction {
+                try {
+                    PlayerStats.update({ PlayerStats.id eq id }) { statement ->
+                        val fetchRow = {
+                            PlayerStats
+                                .selectAll()
+                                .where { PlayerStats.id eq id }
+                                .limit(1)
+                                .firstOrNull()
+                        }
+                        builder(statement, fetchRow)
+                    } > 0
+                } catch (ex: Exception) {
+                    ex.printStackTrace()
+                    false
+                }
+            }
+        }
+
+        suspend fun updateByPlayerId(
+            playerId: Long,
+            builder: UpdateBuilder<Int>.(fetchRow: () -> ResultRow?) -> Unit
+        ): Boolean = withContext(Dispatchers.IO) {
+            val playerRef = EntityID(playerId, Players)
+            transaction {
+                try {
+                    PlayerStats.update({ PlayerStats.playerId eq playerRef }) { statement ->
+                        val fetchRow = {
+                            PlayerStats
+                                .selectAll()
+                                .where { PlayerStats.playerId eq playerRef }
+                                .limit(1)
+                                .firstOrNull()
+                        }
+                        builder(statement, fetchRow)
+                    } > 0
+                } catch (ex: Exception) {
+                    ex.printStackTrace()
+                    false
+                }
             }
         }
 

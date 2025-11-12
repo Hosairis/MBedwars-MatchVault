@@ -6,6 +6,7 @@ import me.hosairis.matchvault.storage.config.Config
 import me.hosairis.matchvault.storage.database.MatchStatus
 import me.hosairis.matchvault.storage.database.MatchTeams
 import me.hosairis.matchvault.storage.database.Matches
+import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.statements.UpdateBuilder
@@ -67,6 +68,29 @@ data class MatchData(
                             this.id = row[Matches.id].value
                         }
                     }
+            }
+        }
+
+        suspend fun update(
+            id: Long,
+            builder: UpdateBuilder<Int>.(fetchRow: () -> ResultRow?) -> Unit
+        ): Boolean = withContext(Dispatchers.IO) {
+            transaction {
+                try {
+                    Matches.update({ Matches.id eq id }) { statement ->
+                        val fetchRow = {
+                            Matches
+                                .selectAll()
+                                .where { Matches.id eq id }
+                                .limit(1)
+                                .firstOrNull()
+                        }
+                        builder(statement, fetchRow)
+                    } > 0
+                } catch (ex: Exception) {
+                    ex.printStackTrace()
+                    false
+                }
             }
         }
     }

@@ -13,7 +13,6 @@ import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.statements.UpdateBuilder
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insertAndGetId
-import org.jetbrains.exposed.v1.jdbc.select
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import org.jetbrains.exposed.v1.jdbc.update
@@ -68,6 +67,101 @@ data class ShopPurchaseData(
                     .selectAll()
                     .where { ShopPurchases.teamId eq teamRef }
                     .map { it.toData() }
+            }
+        }
+
+        suspend fun update(
+            id: Long,
+            builder: UpdateBuilder<Int>.(fetchRow: () -> ResultRow?) -> Unit
+        ): Boolean = withContext(Dispatchers.IO) {
+            transaction {
+                try {
+                    ShopPurchases.update({ ShopPurchases.id eq id }) { statement ->
+                        val fetchRow = {
+                            ShopPurchases
+                                .selectAll()
+                                .where { ShopPurchases.id eq id }
+                                .limit(1)
+                                .firstOrNull()
+                        }
+                        builder(statement, fetchRow)
+                    } > 0
+                } catch (ex: Exception) {
+                    ex.printStackTrace()
+                    false
+                }
+            }
+        }
+
+        suspend fun updateByMatchId(
+            matchId: Long,
+            builder: UpdateBuilder<Int>.(fetchRow: () -> ResultRow?) -> Unit
+        ): Boolean = withContext(Dispatchers.IO) {
+            transaction {
+                try {
+                    val matchRef = EntityID(matchId, Matches)
+                    ShopPurchases.update({ ShopPurchases.matchId eq matchRef }) { statement ->
+                        val fetchRow = {
+                            ShopPurchases
+                                .selectAll()
+                                .where { ShopPurchases.matchId eq matchRef }
+                                .limit(1)
+                                .firstOrNull()
+                        }
+                        builder(statement, fetchRow)
+                    } > 0
+                } catch (ex: Exception) {
+                    ex.printStackTrace()
+                    false
+                }
+            }
+        }
+
+        suspend fun updateByPlayerId(
+            playerId: Long,
+            builder: UpdateBuilder<Int>.(fetchRow: () -> ResultRow?) -> Unit
+        ): Boolean = withContext(Dispatchers.IO) {
+            transaction {
+                try {
+                    val playerRef = EntityID(playerId, Players)
+                    ShopPurchases.update({ ShopPurchases.playerId eq playerRef }) { statement ->
+                        val fetchRow = {
+                            ShopPurchases
+                                .selectAll()
+                                .where { ShopPurchases.playerId eq playerRef }
+                                .limit(1)
+                                .firstOrNull()
+                        }
+                        builder(statement, fetchRow)
+                    } > 0
+                } catch (ex: Exception) {
+                    ex.printStackTrace()
+                    false
+                }
+            }
+        }
+
+        suspend fun updateByTeamId(
+            teamId: Long,
+            builder: UpdateBuilder<Int>.(fetchRow: () -> ResultRow?) -> Unit
+        ): Boolean = withContext(Dispatchers.IO) {
+            transaction {
+                try {
+                    val teamRef = EntityID(teamId, MatchTeams)
+                    ShopPurchases.update({ ShopPurchases.teamId eq teamRef }) { statement ->
+                        val fetchRow = {
+                            ShopPurchases
+                                .selectAll()
+                                .where { ShopPurchases.teamId eq teamRef }
+                                .limit(1)
+                                .firstOrNull()
+                        }
+                        builder(statement, fetchRow)
+                    } > 0
+                } catch (ex: Exception) {
+                    ex.printStackTrace()
+                    false
+                }
             }
         }
 
