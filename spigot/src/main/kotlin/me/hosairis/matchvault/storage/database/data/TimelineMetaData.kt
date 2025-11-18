@@ -49,21 +49,16 @@ data class TimelineMetaData(
             builder: UpdateBuilder<Int>.(fetchRow: () -> ResultRow?) -> Unit
         ): Boolean = withContext(Dispatchers.IO) {
             transaction {
-                try {
-                    TimelineMetas.update({ TimelineMetas.id eq id }) { statement ->
-                        val fetchRow = {
-                            TimelineMetas
-                                .selectAll()
-                                .where { TimelineMetas.id eq id }
-                                .limit(1)
-                                .firstOrNull()
-                        }
-                        builder(statement, fetchRow)
-                    } > 0
-                } catch (ex: Exception) {
-                    ex.printStackTrace()
-                    false
-                }
+                TimelineMetas.update({ TimelineMetas.id eq id }) { statement ->
+                    val fetchRow = {
+                        TimelineMetas
+                            .selectAll()
+                            .where { TimelineMetas.id eq id }
+                            .limit(1)
+                            .firstOrNull()
+                    }
+                    builder(statement, fetchRow)
+                } > 0
             }
         }
 
@@ -72,22 +67,17 @@ data class TimelineMetaData(
             builder: UpdateBuilder<Int>.(fetchRow: () -> ResultRow?) -> Unit
         ): Boolean = withContext(Dispatchers.IO) {
             transaction {
-                try {
-                    val timelineRef = EntityID(timelineId, Timelines)
-                    TimelineMetas.update({ TimelineMetas.timelineId eq timelineRef }) { statement ->
-                        val fetchRow = {
-                            TimelineMetas
-                                .selectAll()
-                                .where { TimelineMetas.timelineId eq timelineRef }
-                                .limit(1)
-                                .firstOrNull()
-                        }
-                        builder(statement, fetchRow)
-                    } > 0
-                } catch (ex: Exception) {
-                    ex.printStackTrace()
-                    false
-                }
+                val timelineRef = EntityID(timelineId, Timelines)
+                TimelineMetas.update({ TimelineMetas.timelineId eq timelineRef }) { statement ->
+                    val fetchRow = {
+                        TimelineMetas
+                            .selectAll()
+                            .where { TimelineMetas.timelineId eq timelineRef }
+                            .limit(1)
+                            .firstOrNull()
+                    }
+                    builder(statement, fetchRow)
+                } > 0
             }
         }
 
@@ -103,49 +93,34 @@ data class TimelineMetaData(
 
     suspend fun create(): Boolean = withContext(Dispatchers.IO) {
         transaction {
-            try {
-                val newId = TimelineMetas.insertAndGetId { statement ->
-                    statement[TimelineMetas.timelineId] = EntityID(this@TimelineMetaData.timelineId, Timelines)
-                    statement[TimelineMetas.key] = this@TimelineMetaData.key
-                    statement[TimelineMetas.value] = this@TimelineMetaData.value
-                }
-                this@TimelineMetaData.id = newId.value
-                true
-            } catch (ex: Exception) {
-                ex.printStackTrace()
-                false
+            val newId = TimelineMetas.insertAndGetId { statement ->
+                statement[TimelineMetas.timelineId] = EntityID(this@TimelineMetaData.timelineId, Timelines)
+                statement[TimelineMetas.key] = this@TimelineMetaData.key
+                statement[TimelineMetas.value] = this@TimelineMetaData.value
             }
+            this@TimelineMetaData.id = newId.value
+            true
         }
     }
 
     suspend fun update(builder: (UpdateBuilder<Int>.(TimelineMetaData) -> Unit)? = null): Boolean = withContext(Dispatchers.IO) {
         val recordId = id ?: return@withContext false
         transaction {
-            try {
-                TimelineMetas.update({ TimelineMetas.id eq recordId }) { statement ->
-                    if (builder == null) {
-                        statement[TimelineMetas.key] = this@TimelineMetaData.key
-                        statement[TimelineMetas.value] = this@TimelineMetaData.value
-                    } else {
-                        builder.invoke(statement, this@TimelineMetaData)
-                    }
-                } > 0
-            } catch (ex: Exception) {
-                ex.printStackTrace()
-                false
-            }
+            TimelineMetas.update({ TimelineMetas.id eq recordId }) { statement ->
+                if (builder == null) {
+                    statement[TimelineMetas.key] = this@TimelineMetaData.key
+                    statement[TimelineMetas.value] = this@TimelineMetaData.value
+                } else {
+                    builder.invoke(statement, this@TimelineMetaData)
+                }
+            } > 0
         }
     }
 
     suspend fun delete(): Boolean = withContext(Dispatchers.IO) {
         val recordId = id ?: return@withContext false
         transaction {
-            try {
-                TimelineMetas.deleteWhere { TimelineMetas.id eq recordId } > 0
-            } catch (ex: Exception) {
-                ex.printStackTrace()
-                false
-            }
+            TimelineMetas.deleteWhere { TimelineMetas.id eq recordId } > 0
         }
     }
 }

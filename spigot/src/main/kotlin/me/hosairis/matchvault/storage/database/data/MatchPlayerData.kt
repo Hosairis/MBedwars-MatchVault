@@ -84,21 +84,16 @@ data class MatchPlayerData(
             builder: UpdateBuilder<Int>.(fetchRow: () -> ResultRow?) -> Unit
         ): Boolean = withContext(Dispatchers.IO) {
             transaction {
-                try {
-                    MatchPlayers.update({ MatchPlayers.id eq id }) { statement ->
-                        val fetchRow = {
-                            MatchPlayers
-                                .selectAll()
-                                .where { MatchPlayers.id eq id }
-                                .limit(1)
-                                .firstOrNull()
-                        }
-                        builder(statement, fetchRow)
-                    } > 0
-                } catch (ex: Exception) {
-                    ex.printStackTrace()
-                    false
-                }
+                MatchPlayers.update({ MatchPlayers.id eq id }) { statement ->
+                    val fetchRow = {
+                        MatchPlayers
+                            .selectAll()
+                            .where { MatchPlayers.id eq id }
+                            .limit(1)
+                            .firstOrNull()
+                    }
+                    builder(statement, fetchRow)
+                } > 0
             }
         }
 
@@ -107,22 +102,17 @@ data class MatchPlayerData(
             builder: UpdateBuilder<Int>.(fetchRow: () -> ResultRow?) -> Unit
         ): Boolean = withContext(Dispatchers.IO) {
             transaction {
-                try {
-                    val matchRef = EntityID(matchId, Matches)
-                    MatchPlayers.update({ MatchPlayers.matchId eq matchRef }) { statement ->
-                        val fetchRow = {
-                            MatchPlayers
-                                .selectAll()
-                                .where { MatchPlayers.matchId eq matchRef }
-                                .limit(1)
-                                .firstOrNull()
-                        }
-                        builder(statement, fetchRow)
-                    } > 0
-                } catch (ex: Exception) {
-                    ex.printStackTrace()
-                    false
-                }
+                val matchRef = EntityID(matchId, Matches)
+                MatchPlayers.update({ MatchPlayers.matchId eq matchRef }) { statement ->
+                    val fetchRow = {
+                        MatchPlayers
+                            .selectAll()
+                            .where { MatchPlayers.matchId eq matchRef }
+                            .limit(1)
+                            .firstOrNull()
+                    }
+                    builder(statement, fetchRow)
+                } > 0
             }
         }
 
@@ -131,22 +121,17 @@ data class MatchPlayerData(
             builder: UpdateBuilder<Int>.(fetchRow: () -> ResultRow?) -> Unit
         ): Boolean = withContext(Dispatchers.IO) {
             transaction {
-                try {
-                    val playerRef = EntityID(playerId, Players)
-                    MatchPlayers.update({ MatchPlayers.playerId eq playerRef }) { statement ->
-                        val fetchRow = {
-                            MatchPlayers
-                                .selectAll()
-                                .where { MatchPlayers.playerId eq playerRef }
-                                .limit(1)
-                                .firstOrNull()
-                        }
-                        builder(statement, fetchRow)
-                    } > 0
-                } catch (ex: Exception) {
-                    ex.printStackTrace()
-                    false
-                }
+                val playerRef = EntityID(playerId, Players)
+                MatchPlayers.update({ MatchPlayers.playerId eq playerRef }) { statement ->
+                    val fetchRow = {
+                        MatchPlayers
+                            .selectAll()
+                            .where { MatchPlayers.playerId eq playerRef }
+                            .limit(1)
+                            .firstOrNull()
+                    }
+                    builder(statement, fetchRow)
+                } > 0
             }
         }
 
@@ -155,22 +140,17 @@ data class MatchPlayerData(
             builder: UpdateBuilder<Int>.(fetchRow: () -> ResultRow?) -> Unit
         ): Boolean = withContext(Dispatchers.IO) {
             transaction {
-                try {
-                    val teamRef = EntityID(teamId, MatchTeams)
-                    MatchPlayers.update({ MatchPlayers.teamId eq teamRef }) { statement ->
-                        val fetchRow = {
-                            MatchPlayers
-                                .selectAll()
-                                .where { MatchPlayers.teamId eq teamRef }
-                                .limit(1)
-                                .firstOrNull()
-                        }
-                        builder(statement, fetchRow)
-                    } > 0
-                } catch (ex: Exception) {
-                    ex.printStackTrace()
-                    false
-                }
+                val teamRef = EntityID(teamId, MatchTeams)
+                MatchPlayers.update({ MatchPlayers.teamId eq teamRef }) { statement ->
+                    val fetchRow = {
+                        MatchPlayers
+                            .selectAll()
+                            .where { MatchPlayers.teamId eq teamRef }
+                            .limit(1)
+                            .firstOrNull()
+                    }
+                    builder(statement, fetchRow)
+                } > 0
             }
         }
 
@@ -199,11 +179,34 @@ data class MatchPlayerData(
 
     suspend fun create(): Boolean = withContext(Dispatchers.IO) {
         transaction {
-            try {
-                val newId = MatchPlayers.insertAndGetId { statement ->
-                    statement[MatchPlayers.matchId] = EntityID(this@MatchPlayerData.matchId, Matches)
-                    statement[MatchPlayers.playerId] = EntityID(this@MatchPlayerData.playerId, Players)
-                    statement[MatchPlayers.teamId] = EntityID(this@MatchPlayerData.teamId, MatchTeams)
+            val newId = MatchPlayers.insertAndGetId { statement ->
+                statement[MatchPlayers.matchId] = EntityID(this@MatchPlayerData.matchId, Matches)
+                statement[MatchPlayers.playerId] = EntityID(this@MatchPlayerData.playerId, Players)
+                statement[MatchPlayers.teamId] = EntityID(this@MatchPlayerData.teamId, MatchTeams)
+                statement[MatchPlayers.kills] = this@MatchPlayerData.kills
+                statement[MatchPlayers.finalKills] = this@MatchPlayerData.finalKills
+                statement[MatchPlayers.deaths] = this@MatchPlayerData.deaths
+                statement[MatchPlayers.bedsBroken] = this@MatchPlayerData.bedsBroken
+                statement[MatchPlayers.resIron] = this@MatchPlayerData.resIron
+                statement[MatchPlayers.resGold] = this@MatchPlayerData.resGold
+                statement[MatchPlayers.resDiamond] = this@MatchPlayerData.resDiamond
+                statement[MatchPlayers.resEmerald] = this@MatchPlayerData.resEmerald
+                statement[MatchPlayers.resIronSpawner] = this@MatchPlayerData.resIronSpawner
+                statement[MatchPlayers.resGoldSpawner] = this@MatchPlayerData.resGoldSpawner
+                statement[MatchPlayers.resDiamondSpawner] = this@MatchPlayerData.resDiamondSpawner
+                statement[MatchPlayers.resEmeraldSpawner] = this@MatchPlayerData.resEmeraldSpawner
+                statement[MatchPlayers.won] = this@MatchPlayerData.won
+            }
+            this@MatchPlayerData.id = newId.value
+            true
+        }
+    }
+
+    suspend fun update(builder: (UpdateBuilder<Int>.(MatchPlayerData) -> Unit)? = null): Boolean = withContext(Dispatchers.IO) {
+        val recordId = id ?: return@withContext false
+        transaction {
+            MatchPlayers.update({ MatchPlayers.id eq recordId }) { statement ->
+                if (builder == null) {
                     statement[MatchPlayers.kills] = this@MatchPlayerData.kills
                     statement[MatchPlayers.finalKills] = this@MatchPlayerData.finalKills
                     statement[MatchPlayers.deaths] = this@MatchPlayerData.deaths
@@ -217,55 +220,17 @@ data class MatchPlayerData(
                     statement[MatchPlayers.resDiamondSpawner] = this@MatchPlayerData.resDiamondSpawner
                     statement[MatchPlayers.resEmeraldSpawner] = this@MatchPlayerData.resEmeraldSpawner
                     statement[MatchPlayers.won] = this@MatchPlayerData.won
+                } else {
+                    builder.invoke(statement, this@MatchPlayerData)
                 }
-                this@MatchPlayerData.id = newId.value
-                true
-            } catch (ex: Exception) {
-                ex.printStackTrace()
-                false
-            }
-        }
-    }
-
-    suspend fun update(builder: (UpdateBuilder<Int>.(MatchPlayerData) -> Unit)? = null): Boolean = withContext(Dispatchers.IO) {
-        val recordId = id ?: return@withContext false
-        transaction {
-            try {
-                MatchPlayers.update({ MatchPlayers.id eq recordId }) { statement ->
-                    if (builder == null) {
-                        statement[MatchPlayers.kills] = this@MatchPlayerData.kills
-                        statement[MatchPlayers.finalKills] = this@MatchPlayerData.finalKills
-                        statement[MatchPlayers.deaths] = this@MatchPlayerData.deaths
-                        statement[MatchPlayers.bedsBroken] = this@MatchPlayerData.bedsBroken
-                        statement[MatchPlayers.resIron] = this@MatchPlayerData.resIron
-                        statement[MatchPlayers.resGold] = this@MatchPlayerData.resGold
-                        statement[MatchPlayers.resDiamond] = this@MatchPlayerData.resDiamond
-                        statement[MatchPlayers.resEmerald] = this@MatchPlayerData.resEmerald
-                        statement[MatchPlayers.resIronSpawner] = this@MatchPlayerData.resIronSpawner
-                        statement[MatchPlayers.resGoldSpawner] = this@MatchPlayerData.resGoldSpawner
-                        statement[MatchPlayers.resDiamondSpawner] = this@MatchPlayerData.resDiamondSpawner
-                        statement[MatchPlayers.resEmeraldSpawner] = this@MatchPlayerData.resEmeraldSpawner
-                        statement[MatchPlayers.won] = this@MatchPlayerData.won
-                    } else {
-                        builder.invoke(statement, this@MatchPlayerData)
-                    }
-                } > 0
-            } catch (ex: Exception) {
-                ex.printStackTrace()
-                false
-            }
+            } > 0
         }
     }
 
     suspend fun delete(): Boolean = withContext(Dispatchers.IO) {
         val recordId = id ?: return@withContext false
         transaction {
-            try {
-                MatchPlayers.deleteWhere { MatchPlayers.id eq recordId } > 0
-            } catch (ex: Exception) {
-                ex.printStackTrace()
-                false
-            }
+            MatchPlayers.deleteWhere { MatchPlayers.id eq recordId } > 0
         }
     }
 }

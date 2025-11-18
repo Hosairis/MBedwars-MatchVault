@@ -76,29 +76,43 @@ data class MatchData(
             builder: UpdateBuilder<Int>.(fetchRow: () -> ResultRow?) -> Unit
         ): Boolean = withContext(Dispatchers.IO) {
             transaction {
-                try {
-                    Matches.update({ Matches.id eq id }) { statement ->
-                        val fetchRow = {
-                            Matches
-                                .selectAll()
-                                .where { Matches.id eq id }
-                                .limit(1)
-                                .firstOrNull()
-                        }
-                        builder(statement, fetchRow)
-                    } > 0
-                } catch (ex: Exception) {
-                    ex.printStackTrace()
-                    false
-                }
+                Matches.update({ Matches.id eq id }) { statement ->
+                    val fetchRow = {
+                        Matches
+                            .selectAll()
+                            .where { Matches.id eq id }
+                            .limit(1)
+                            .firstOrNull()
+                    }
+                    builder(statement, fetchRow)
+                } > 0
             }
         }
     }
 
     suspend fun create(): Boolean = withContext(Dispatchers.IO) {
         transaction {
-            try {
-                val newId = Matches.insertAndGetId { statement ->
+            val newId = Matches.insertAndGetId { statement ->
+                statement[Matches.arenaName] = this@MatchData.arenaName
+                statement[Matches.mode] = this@MatchData.mode
+                statement[Matches.startedAt] = this@MatchData.startedAt
+                statement[Matches.endedAt] = this@MatchData.endedAt
+                statement[Matches.duration] = this@MatchData.duration
+                statement[Matches.status] = this@MatchData.status
+                statement[Matches.isTie] = this@MatchData.isTie
+                statement[Matches.winnerTeamId] = this@MatchData.winnerTeamId?.let { EntityID(it, MatchTeams) }
+                statement[Matches.server] = this@MatchData.server
+            }
+            this@MatchData.id = newId.value
+            true
+        }
+    }
+
+    suspend fun update(builder: (UpdateBuilder<Int>.(MatchData) -> Unit)? = null): Boolean = withContext(Dispatchers.IO) {
+        val matchId = id ?: return@withContext false
+        transaction {
+            Matches.update({ Matches.id eq matchId }) { statement ->
+                if (builder == null) {
                     statement[Matches.arenaName] = this@MatchData.arenaName
                     statement[Matches.mode] = this@MatchData.mode
                     statement[Matches.startedAt] = this@MatchData.startedAt
@@ -108,51 +122,17 @@ data class MatchData(
                     statement[Matches.isTie] = this@MatchData.isTie
                     statement[Matches.winnerTeamId] = this@MatchData.winnerTeamId?.let { EntityID(it, MatchTeams) }
                     statement[Matches.server] = this@MatchData.server
+                } else {
+                    builder.invoke(statement, this@MatchData)
                 }
-                this@MatchData.id = newId.value
-                true
-            } catch (ex: Exception) {
-                ex.printStackTrace()
-                false
-            }
-        }
-    }
-
-    suspend fun update(builder: (UpdateBuilder<Int>.(MatchData) -> Unit)? = null): Boolean = withContext(Dispatchers.IO) {
-        val matchId = id ?: return@withContext false
-        transaction {
-            try {
-                Matches.update({ Matches.id eq matchId }) { statement ->
-                    if (builder == null) {
-                        statement[Matches.arenaName] = this@MatchData.arenaName
-                        statement[Matches.mode] = this@MatchData.mode
-                        statement[Matches.startedAt] = this@MatchData.startedAt
-                        statement[Matches.endedAt] = this@MatchData.endedAt
-                        statement[Matches.duration] = this@MatchData.duration
-                        statement[Matches.status] = this@MatchData.status
-                        statement[Matches.isTie] = this@MatchData.isTie
-                        statement[Matches.winnerTeamId] = this@MatchData.winnerTeamId?.let { EntityID(it, MatchTeams) }
-                        statement[Matches.server] = this@MatchData.server
-                    } else {
-                        builder.invoke(statement, this@MatchData)
-                    }
-                } > 0
-            } catch (ex: Exception) {
-                ex.printStackTrace()
-                false
-            }
+            } > 0
         }
     }
 
     suspend fun delete(): Boolean = withContext(Dispatchers.IO) {
         val matchId = id ?: return@withContext false
         transaction {
-            try {
-                Matches.deleteWhere { Matches.id eq matchId } > 0
-            } catch (ex: Exception) {
-                ex.printStackTrace()
-                false
-            }
+            Matches.deleteWhere { Matches.id eq matchId } > 0
         }
     }
 

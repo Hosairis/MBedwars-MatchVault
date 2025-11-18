@@ -51,21 +51,16 @@ data class MatchTeamData(
             builder: UpdateBuilder<Int>.(fetchRow: () -> ResultRow?) -> Unit
         ): Boolean = withContext(Dispatchers.IO) {
             transaction {
-                try {
-                    MatchTeams.update({ MatchTeams.id eq id }) { statement ->
-                        val fetchRow = {
-                            MatchTeams
-                                .selectAll()
-                                .where { MatchTeams.id eq id }
-                                .limit(1)
-                                .firstOrNull()
-                        }
-                        builder(statement, fetchRow)
-                    } > 0
-                } catch (ex: Exception) {
-                    ex.printStackTrace()
-                    false
-                }
+                MatchTeams.update({ MatchTeams.id eq id }) { statement ->
+                    val fetchRow = {
+                        MatchTeams
+                            .selectAll()
+                            .where { MatchTeams.id eq id }
+                            .limit(1)
+                            .firstOrNull()
+                    }
+                    builder(statement, fetchRow)
+                } > 0
             }
         }
 
@@ -74,22 +69,17 @@ data class MatchTeamData(
             builder: UpdateBuilder<Int>.(fetchRow: () -> ResultRow?) -> Unit
         ): Boolean = withContext(Dispatchers.IO) {
             transaction {
-                try {
-                    val matchRef = EntityID(matchId, Matches)
-                    MatchTeams.update({ MatchTeams.matchId eq matchRef }) { statement ->
-                        val fetchRow = {
-                            MatchTeams
-                                .selectAll()
-                                .where { MatchTeams.matchId eq matchRef }
-                                .limit(1)
-                                .firstOrNull()
-                        }
-                        builder(statement, fetchRow)
-                    } > 0
-                } catch (ex: Exception) {
-                    ex.printStackTrace()
-                    false
-                }
+                val matchRef = EntityID(matchId, Matches)
+                MatchTeams.update({ MatchTeams.matchId eq matchRef }) { statement ->
+                    val fetchRow = {
+                        MatchTeams
+                            .selectAll()
+                            .where { MatchTeams.matchId eq matchRef }
+                            .limit(1)
+                            .firstOrNull()
+                    }
+                    builder(statement, fetchRow)
+                } > 0
             }
         }
 
@@ -107,53 +97,38 @@ data class MatchTeamData(
 
     suspend fun create(): Boolean = withContext(Dispatchers.IO) {
         transaction {
-            try {
-                val newId = MatchTeams.insertAndGetId { statement ->
-                    statement[MatchTeams.matchId] = EntityID(this@MatchTeamData.matchId, Matches)
-                    statement[MatchTeams.team] = this@MatchTeamData.team
-                    statement[MatchTeams.bedDestroyedAt] = this@MatchTeamData.bedDestroyedAt
-                    statement[MatchTeams.eliminatedAt] = this@MatchTeamData.eliminatedAt
-                    statement[MatchTeams.finalPlacement] = this@MatchTeamData.finalPlacement
-                }
-                this@MatchTeamData.id = newId.value
-                true
-            } catch (ex: Exception) {
-                ex.printStackTrace()
-                false
+            val newId = MatchTeams.insertAndGetId { statement ->
+                statement[MatchTeams.matchId] = EntityID(this@MatchTeamData.matchId, Matches)
+                statement[MatchTeams.team] = this@MatchTeamData.team
+                statement[MatchTeams.bedDestroyedAt] = this@MatchTeamData.bedDestroyedAt
+                statement[MatchTeams.eliminatedAt] = this@MatchTeamData.eliminatedAt
+                statement[MatchTeams.finalPlacement] = this@MatchTeamData.finalPlacement
             }
+            this@MatchTeamData.id = newId.value
+            true
         }
     }
 
     suspend fun update(builder: (UpdateBuilder<Int>.(MatchTeamData) -> Unit)? = null): Boolean = withContext(Dispatchers.IO) {
         val teamId = id ?: return@withContext false
         transaction {
-            try {
-                MatchTeams.update({ MatchTeams.id eq teamId }) { statement ->
-                    if (builder == null) {
-                        statement[MatchTeams.team] = this@MatchTeamData.team
-                        statement[MatchTeams.bedDestroyedAt] = this@MatchTeamData.bedDestroyedAt
-                        statement[MatchTeams.eliminatedAt] = this@MatchTeamData.eliminatedAt
-                        statement[MatchTeams.finalPlacement] = this@MatchTeamData.finalPlacement
-                    } else {
-                        builder.invoke(statement, this@MatchTeamData)
-                    }
-                } > 0
-            } catch (ex: Exception) {
-                ex.printStackTrace()
-                false
-            }
+            MatchTeams.update({ MatchTeams.id eq teamId }) { statement ->
+                if (builder == null) {
+                    statement[MatchTeams.team] = this@MatchTeamData.team
+                    statement[MatchTeams.bedDestroyedAt] = this@MatchTeamData.bedDestroyedAt
+                    statement[MatchTeams.eliminatedAt] = this@MatchTeamData.eliminatedAt
+                    statement[MatchTeams.finalPlacement] = this@MatchTeamData.finalPlacement
+                } else {
+                    builder.invoke(statement, this@MatchTeamData)
+                }
+            } > 0
         }
     }
 
     suspend fun delete(): Boolean = withContext(Dispatchers.IO) {
         val teamId = id ?: return@withContext false
         transaction {
-            try {
-                MatchTeams.deleteWhere { MatchTeams.id eq teamId } > 0
-            } catch (ex: Exception) {
-                ex.printStackTrace()
-                false
-            }
+            MatchTeams.deleteWhere { MatchTeams.id eq teamId } > 0
         }
     }
 }
