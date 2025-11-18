@@ -1,14 +1,15 @@
 package me.hosairis.matchvault.storage.database.data
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import me.hosairis.matchvault.storage.database.Players
-import me.hosairis.matchvault.storage.database.runInTransaction
 import org.jetbrains.exposed.v1.core.ResultRow
-import org.jetbrains.exposed.v1.core.Transaction
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.statements.UpdateBuilder
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insertAndGetId
 import org.jetbrains.exposed.v1.jdbc.selectAll
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import org.jetbrains.exposed.v1.jdbc.update
 import java.util.UUID
 
@@ -25,75 +26,83 @@ data class PlayerData(
         private set
 
     companion object {
-        suspend fun read(uuid: UUID, transaction: Transaction? = null): PlayerData? = runInTransaction(transaction) {
-            Players
-                .selectAll()
-                .where { Players.uuid eq uuid.toString() }
-                .limit(1)
-                .firstOrNull()
-                ?.let { row ->
-                    PlayerData(
-                        name = row[Players.name],
-                        uuid = UUID.fromString(row[Players.uuid]),
-                        firstSeen = row[Players.firstSeen],
-                        lastSeen = row[Players.lastSeen]
-                    ).apply {
-                        id = row[Players.id].value
+        suspend fun read(uuid: UUID): PlayerData? = withContext(Dispatchers.IO) {
+            transaction {
+                Players
+                    .selectAll()
+                    .where { Players.uuid eq uuid.toString() }
+                    .limit(1)
+                    .firstOrNull()
+                    ?.let { row ->
+                        PlayerData(
+                            name = row[Players.name],
+                            uuid = UUID.fromString(row[Players.uuid]),
+                            firstSeen = row[Players.firstSeen],
+                            lastSeen = row[Players.lastSeen]
+                        ).apply {
+                            id = row[Players.id].value
+                        }
                     }
-                }
+            }
         }
 
         suspend fun update(
             uuid: UUID,
-            builder: UpdateBuilder<Int>.(fetchRow: () -> ResultRow?) -> Unit,
-            transaction: Transaction? = null
-        ): Boolean = runInTransaction(transaction) {
-            Players.update({ Players.uuid eq uuid.toString() }) { statement ->
-                val fetchRow = {
-                    Players
-                        .selectAll()
-                        .where { Players.uuid eq uuid.toString() }
-                        .limit(1)
-                        .firstOrNull()
-                }
-                builder(statement, fetchRow)
-            } > 0
+            builder: UpdateBuilder<Int>.(fetchRow: () -> ResultRow?) -> Unit
+        ): Boolean = withContext(Dispatchers.IO) {
+            transaction {
+                Players.update({ Players.uuid eq uuid.toString() }) { statement ->
+                    val fetchRow = {
+                        Players
+                            .selectAll()
+                            .where { Players.uuid eq uuid.toString() }
+                            .limit(1)
+                            .firstOrNull()
+                    }
+                    builder(statement, fetchRow)
+                } > 0
+            }
         }
     }
 
-    suspend fun create(transaction: Transaction? = null): Boolean = runInTransaction(transaction) {
-        val newId = Players.insertAndGetId { statement ->
-            statement[Players.name] = this@PlayerData.name
-            statement[Players.uuid] = this@PlayerData.uuid.toString()
-            statement[Players.firstSeen] = this@PlayerData.firstSeen
-            statement[Players.lastSeen] = this@PlayerData.lastSeen
+    suspend fun create(): Boolean = withContext(Dispatchers.IO) {
+        transaction {
+            val newId = Players.insertAndGetId { statement ->
+                statement[Players.name] = this@PlayerData.name
+                statement[Players.uuid] = this@PlayerData.uuid.toString()
+                statement[Players.firstSeen] = this@PlayerData.firstSeen
+                statement[Players.lastSeen] = this@PlayerData.lastSeen
+            }
+            this@PlayerData.id = newId.value
+            true
         }
-        this@PlayerData.id = newId.value
-        true
     }
 
     suspend fun update(
         updateFirstSeen: Boolean = false,
-        builder: (UpdateBuilder<Int>.(PlayerData) -> Unit)? = null,
-        transaction: Transaction? = null
-    ): Boolean = runInTransaction(transaction) {
-        Players.update({ Players.uuid eq uuid.toString() }) { statement ->
-            if (builder == null) {
-                statement[Players.name] = this@PlayerData.name
-                if (updateFirstSeen) statement[Players.firstSeen] = this@PlayerData.firstSeen
-                statement[Players.lastSeen] = this@PlayerData.lastSeen
-            } else {
-                builder.invoke(statement, this@PlayerData)
-            }
-        } > 0
+        builder: (UpdateBuilder<Int>.(PlayerData) -> Unit)? = null
+    ): Boolean = withContext(Dispatchers.IO) {
+        transaction {
+            Players.update({ Players.uuid eq uuid.toString() }) { statement ->
+                if (builder == null) {
+                    statement[Players.name] = this@PlayerData.name
+                    if (updateFirstSeen) statement[Players.firstSeen] = this@PlayerData.firstSeen
+                    statement[Players.lastSeen] = this@PlayerData.lastSeen
+                } else {
+                    builder.invoke(statement, this@PlayerData)
+                }
+            } > 0
+        }
     }
 
-    suspend fun delete(transaction: Transaction? = null): Boolean = runInTransaction(transaction) {
-        Players.deleteWhere { Players.uuid eq uuid.toString() } > 0
+    suspend fun delete(): Boolean = withContext(Dispatchers.IO) {
+        transaction {
+            Players.deleteWhere { Players.uuid eq uuid.toString() } > 0
+        }
     }
 
-    suspend fun loadStats(transaction: Transaction? = null) {
+    suspend fun loadStats() {
         val playerId = id ?: return
-        stats = PlayerStatsData.readByPlayerId(playerId, transaction)
+        stats = PlayerStatsData.readByPlayerId(playerId)
     }
 }
