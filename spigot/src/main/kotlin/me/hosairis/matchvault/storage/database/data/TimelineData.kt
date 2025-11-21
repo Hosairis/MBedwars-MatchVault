@@ -91,63 +91,6 @@ data class TimelineData(
             }
         }
 
-        suspend fun updateByMatchId(
-            matchId: Long,
-            builder: UpdateBuilder<Int>.(fetchRow: () -> ResultRow?) -> Unit
-        ): Boolean = withContext(Dispatchers.IO) {
-            transaction {
-                val matchRef = EntityID(matchId, Matches)
-                Timelines.update({ Timelines.matchId eq matchRef }) { statement ->
-                    val fetchRow = {
-                        Timelines
-                            .selectAll()
-                            .where { Timelines.matchId eq matchRef }
-                            .limit(1)
-                            .firstOrNull()
-                    }
-                    builder(statement, fetchRow)
-                } > 0
-            }
-        }
-
-        suspend fun updateByPlayerId(
-            playerId: Long,
-            builder: UpdateBuilder<Int>.(fetchRow: () -> ResultRow?) -> Unit
-        ): Boolean = withContext(Dispatchers.IO) {
-            transaction {
-                val playerRef = EntityID(playerId, Players)
-                Timelines.update({ Timelines.playerId eq playerRef }) { statement ->
-                    val fetchRow = {
-                        Timelines
-                            .selectAll()
-                            .where { Timelines.playerId eq playerRef }
-                            .limit(1)
-                            .firstOrNull()
-                    }
-                    builder(statement, fetchRow)
-                } > 0
-            }
-        }
-
-        suspend fun updateByTargetId(
-            targetId: Long,
-            builder: UpdateBuilder<Int>.(fetchRow: () -> ResultRow?) -> Unit
-        ): Boolean = withContext(Dispatchers.IO) {
-            transaction {
-                val targetRef = EntityID(targetId, Players)
-                Timelines.update({ Timelines.targetId eq targetRef }) { statement ->
-                    val fetchRow = {
-                        Timelines
-                            .selectAll()
-                            .where { Timelines.targetId eq targetRef }
-                            .limit(1)
-                            .firstOrNull()
-                    }
-                    builder(statement, fetchRow)
-                } > 0
-            }
-        }
-
         private fun ResultRow.toData(): TimelineData =
             TimelineData(
                 matchId = this[Timelines.matchId].value,

@@ -64,25 +64,6 @@ data class MatchTeamData(
             }
         }
 
-        suspend fun updateByMatchId(
-            matchId: Long,
-            builder: UpdateBuilder<Int>.(fetchRow: () -> ResultRow?) -> Unit
-        ): Boolean = withContext(Dispatchers.IO) {
-            transaction {
-                val matchRef = EntityID(matchId, Matches)
-                MatchTeams.update({ MatchTeams.matchId eq matchRef }) { statement ->
-                    val fetchRow = {
-                        MatchTeams
-                            .selectAll()
-                            .where { MatchTeams.matchId eq matchRef }
-                            .limit(1)
-                            .firstOrNull()
-                    }
-                    builder(statement, fetchRow)
-                } > 0
-            }
-        }
-
         private fun ResultRow.toData(): MatchTeamData =
             MatchTeamData(
                 matchId = this[MatchTeams.matchId].value,

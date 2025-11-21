@@ -86,63 +86,6 @@ data class UpgradePurchaseData(
             }
         }
 
-        suspend fun updateByMatchId(
-            matchId: Long,
-            builder: UpdateBuilder<Int>.(fetchRow: () -> ResultRow?) -> Unit
-        ): Boolean = withContext(Dispatchers.IO) {
-            transaction {
-                val matchRef = EntityID(matchId, Matches)
-                UpgradePurchases.update({ UpgradePurchases.matchId eq matchRef }) { statement ->
-                    val fetchRow = {
-                        UpgradePurchases
-                            .selectAll()
-                            .where { UpgradePurchases.matchId eq matchRef }
-                            .limit(1)
-                            .firstOrNull()
-                    }
-                    builder(statement, fetchRow)
-                } > 0
-            }
-        }
-
-        suspend fun updateByPlayerId(
-            playerId: Long,
-            builder: UpdateBuilder<Int>.(fetchRow: () -> ResultRow?) -> Unit
-        ): Boolean = withContext(Dispatchers.IO) {
-            transaction {
-                val buyerRef = EntityID(playerId, Players)
-                UpgradePurchases.update({ UpgradePurchases.buyerId eq buyerRef }) { statement ->
-                    val fetchRow = {
-                        UpgradePurchases
-                            .selectAll()
-                            .where { UpgradePurchases.buyerId eq buyerRef }
-                            .limit(1)
-                            .firstOrNull()
-                    }
-                    builder(statement, fetchRow)
-                } > 0
-            }
-        }
-
-        suspend fun updateByTeamId(
-            teamId: Long,
-            builder: UpdateBuilder<Int>.(fetchRow: () -> ResultRow?) -> Unit
-        ): Boolean = withContext(Dispatchers.IO) {
-            transaction {
-                val teamRef = EntityID(teamId, MatchTeams)
-                UpgradePurchases.update({ UpgradePurchases.teamId eq teamRef }) { statement ->
-                    val fetchRow = {
-                        UpgradePurchases
-                            .selectAll()
-                            .where { UpgradePurchases.teamId eq teamRef }
-                            .limit(1)
-                            .firstOrNull()
-                    }
-                    builder(statement, fetchRow)
-                } > 0
-            }
-        }
-
         private fun ResultRow.toData(): UpgradePurchaseData =
             UpgradePurchaseData(
                 matchId = this[UpgradePurchases.matchId].value,

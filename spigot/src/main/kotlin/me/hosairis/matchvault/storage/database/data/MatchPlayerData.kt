@@ -97,63 +97,6 @@ data class MatchPlayerData(
             }
         }
 
-        suspend fun updateByMatchId(
-            matchId: Long,
-            builder: UpdateBuilder<Int>.(fetchRow: () -> ResultRow?) -> Unit
-        ): Boolean = withContext(Dispatchers.IO) {
-            transaction {
-                val matchRef = EntityID(matchId, Matches)
-                MatchPlayers.update({ MatchPlayers.matchId eq matchRef }) { statement ->
-                    val fetchRow = {
-                        MatchPlayers
-                            .selectAll()
-                            .where { MatchPlayers.matchId eq matchRef }
-                            .limit(1)
-                            .firstOrNull()
-                    }
-                    builder(statement, fetchRow)
-                } > 0
-            }
-        }
-
-        suspend fun updateByPlayerId(
-            playerId: Long,
-            builder: UpdateBuilder<Int>.(fetchRow: () -> ResultRow?) -> Unit
-        ): Boolean = withContext(Dispatchers.IO) {
-            transaction {
-                val playerRef = EntityID(playerId, Players)
-                MatchPlayers.update({ MatchPlayers.playerId eq playerRef }) { statement ->
-                    val fetchRow = {
-                        MatchPlayers
-                            .selectAll()
-                            .where { MatchPlayers.playerId eq playerRef }
-                            .limit(1)
-                            .firstOrNull()
-                    }
-                    builder(statement, fetchRow)
-                } > 0
-            }
-        }
-
-        suspend fun updateByTeamId(
-            teamId: Long,
-            builder: UpdateBuilder<Int>.(fetchRow: () -> ResultRow?) -> Unit
-        ): Boolean = withContext(Dispatchers.IO) {
-            transaction {
-                val teamRef = EntityID(teamId, MatchTeams)
-                MatchPlayers.update({ MatchPlayers.teamId eq teamRef }) { statement ->
-                    val fetchRow = {
-                        MatchPlayers
-                            .selectAll()
-                            .where { MatchPlayers.teamId eq teamRef }
-                            .limit(1)
-                            .firstOrNull()
-                    }
-                    builder(statement, fetchRow)
-                } > 0
-            }
-        }
-
         private fun ResultRow.toData(): MatchPlayerData =
             MatchPlayerData(
                 matchId = this[MatchPlayers.matchId].value,

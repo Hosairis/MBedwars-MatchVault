@@ -62,25 +62,6 @@ data class TimelineMetaData(
             }
         }
 
-        suspend fun updateByTimelineId(
-            timelineId: Long,
-            builder: UpdateBuilder<Int>.(fetchRow: () -> ResultRow?) -> Unit
-        ): Boolean = withContext(Dispatchers.IO) {
-            transaction {
-                val timelineRef = EntityID(timelineId, Timelines)
-                TimelineMetas.update({ TimelineMetas.timelineId eq timelineRef }) { statement ->
-                    val fetchRow = {
-                        TimelineMetas
-                            .selectAll()
-                            .where { TimelineMetas.timelineId eq timelineRef }
-                            .limit(1)
-                            .firstOrNull()
-                    }
-                    builder(statement, fetchRow)
-                } > 0
-            }
-        }
-
         private fun ResultRow.toData(): TimelineMetaData =
             TimelineMetaData(
                 timelineId = this[TimelineMetas.timelineId].value,

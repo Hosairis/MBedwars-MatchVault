@@ -88,63 +88,6 @@ data class ShopPurchaseData(
             }
         }
 
-        suspend fun updateByMatchId(
-            matchId: Long,
-            builder: UpdateBuilder<Int>.(fetchRow: () -> ResultRow?) -> Unit
-        ): Boolean = withContext(Dispatchers.IO) {
-            transaction {
-                val matchRef = EntityID(matchId, Matches)
-                ShopPurchases.update({ ShopPurchases.matchId eq matchRef }) { statement ->
-                    val fetchRow = {
-                        ShopPurchases
-                            .selectAll()
-                            .where { ShopPurchases.matchId eq matchRef }
-                            .limit(1)
-                            .firstOrNull()
-                    }
-                    builder(statement, fetchRow)
-                } > 0
-            }
-        }
-
-        suspend fun updateByPlayerId(
-            playerId: Long,
-            builder: UpdateBuilder<Int>.(fetchRow: () -> ResultRow?) -> Unit
-        ): Boolean = withContext(Dispatchers.IO) {
-            transaction {
-                val playerRef = EntityID(playerId, Players)
-                ShopPurchases.update({ ShopPurchases.playerId eq playerRef }) { statement ->
-                    val fetchRow = {
-                        ShopPurchases
-                            .selectAll()
-                            .where { ShopPurchases.playerId eq playerRef }
-                            .limit(1)
-                            .firstOrNull()
-                    }
-                    builder(statement, fetchRow)
-                } > 0
-            }
-        }
-
-        suspend fun updateByTeamId(
-            teamId: Long,
-            builder: UpdateBuilder<Int>.(fetchRow: () -> ResultRow?) -> Unit
-        ): Boolean = withContext(Dispatchers.IO) {
-            transaction {
-                val teamRef = EntityID(teamId, MatchTeams)
-                ShopPurchases.update({ ShopPurchases.teamId eq teamRef }) { statement ->
-                    val fetchRow = {
-                        ShopPurchases
-                            .selectAll()
-                            .where { ShopPurchases.teamId eq teamRef }
-                            .limit(1)
-                            .firstOrNull()
-                    }
-                    builder(statement, fetchRow)
-                } > 0
-            }
-        }
-
         private fun ResultRow.toData(): ShopPurchaseData =
             ShopPurchaseData(
                 matchId = this[ShopPurchases.matchId].value,
