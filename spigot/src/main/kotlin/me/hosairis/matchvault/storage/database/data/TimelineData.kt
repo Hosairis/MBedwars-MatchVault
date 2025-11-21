@@ -1,7 +1,5 @@
 package me.hosairis.matchvault.storage.database.data
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import me.hosairis.matchvault.storage.database.EventType
 import me.hosairis.matchvault.storage.database.MatchTeams
 import me.hosairis.matchvault.storage.database.Matches
@@ -14,7 +12,6 @@ import org.jetbrains.exposed.v1.core.statements.UpdateBuilder
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insertAndGetId
 import org.jetbrains.exposed.v1.jdbc.selectAll
-import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import org.jetbrains.exposed.v1.jdbc.update
 
 data class TimelineData(
@@ -32,63 +29,53 @@ data class TimelineData(
         private set
 
     companion object {
-        suspend fun read(id: Long): TimelineData? = withContext(Dispatchers.IO) {
-            transaction {
-                Timelines
-                    .selectAll()
-                    .where { Timelines.id eq id }
-                    .limit(1)
-                    .firstOrNull()
-                    ?.toData()
-            }
+        fun read(id: Long): TimelineData? {
+            return Timelines
+                .selectAll()
+                .where { Timelines.id eq id }
+                .limit(1)
+                .firstOrNull()
+                ?.toData()
         }
 
-        suspend fun readByMatchId(matchId: Long): List<TimelineData> = withContext(Dispatchers.IO) {
-            transaction {
-                val matchRef = EntityID(matchId, Matches)
-                Timelines
-                    .selectAll()
-                    .where { Timelines.matchId eq matchRef }
-                    .map { it.toData() }
-            }
+        fun readByMatchId(matchId: Long): List<TimelineData> {
+            val matchRef = EntityID(matchId, Matches)
+            return Timelines
+                .selectAll()
+                .where { Timelines.matchId eq matchRef }
+                .map { it.toData() }
         }
 
-        suspend fun readByPlayerId(playerId: Long): List<TimelineData> = withContext(Dispatchers.IO) {
-            transaction {
-                val playerRef = EntityID(playerId, Players)
-                Timelines
-                    .selectAll()
-                    .where { Timelines.playerId eq playerRef }
-                    .map { it.toData() }
-            }
+        fun readByPlayerId(playerId: Long): List<TimelineData> {
+            val playerRef = EntityID(playerId, Players)
+            return Timelines
+                .selectAll()
+                .where { Timelines.playerId eq playerRef }
+                .map { it.toData() }
         }
 
-        suspend fun readByTargetId(targetId: Long): List<TimelineData> = withContext(Dispatchers.IO) {
-            transaction {
-                val targetRef = EntityID(targetId, Players)
-                Timelines
-                    .selectAll()
-                    .where { Timelines.targetId eq targetRef }
-                    .map { it.toData() }
-            }
+        fun readByTargetId(targetId: Long): List<TimelineData> {
+            val targetRef = EntityID(targetId, Players)
+            return Timelines
+                .selectAll()
+                .where { Timelines.targetId eq targetRef }
+                .map { it.toData() }
         }
 
-        suspend fun update(
+        fun update(
             id: Long,
             builder: UpdateBuilder<Int>.(fetchRow: () -> ResultRow?) -> Unit
-        ): Boolean = withContext(Dispatchers.IO) {
-            transaction {
-                Timelines.update({ Timelines.id eq id }) { statement ->
-                    val fetchRow = {
-                        Timelines
-                            .selectAll()
-                            .where { Timelines.id eq id }
-                            .limit(1)
-                            .firstOrNull()
-                    }
-                    builder(statement, fetchRow)
-                } > 0
-            }
+        ): Boolean {
+            return Timelines.update({ Timelines.id eq id }) { statement ->
+                val fetchRow = {
+                    Timelines
+                        .selectAll()
+                        .where { Timelines.id eq id }
+                        .limit(1)
+                        .firstOrNull()
+                }
+                builder(statement, fetchRow)
+            } > 0
         }
 
         private fun ResultRow.toData(): TimelineData =
@@ -104,43 +91,37 @@ data class TimelineData(
             }
     }
 
-    suspend fun create(): Boolean = withContext(Dispatchers.IO) {
-        transaction {
-            val newId = Timelines.insertAndGetId { statement ->
-                statement[Timelines.matchId] = EntityID(this@TimelineData.matchId, Matches)
-                statement[Timelines.playerId] = this@TimelineData.playerId?.let { EntityID(it, Players) }
-                statement[Timelines.targetId] = this@TimelineData.targetId?.let { EntityID(it, Players) }
-                statement[Timelines.teamId] = this@TimelineData.teamId?.let { EntityID(it, MatchTeams) }
+    fun create(): Boolean {
+        val newId = Timelines.insertAndGetId { statement ->
+            statement[Timelines.matchId] = EntityID(this@TimelineData.matchId, Matches)
+            statement[Timelines.playerId] = this@TimelineData.playerId?.let { EntityID(it, Players) }
+            statement[Timelines.targetId] = this@TimelineData.targetId?.let { EntityID(it, Players) }
+            statement[Timelines.teamId] = this@TimelineData.teamId?.let { EntityID(it, MatchTeams) }
+            statement[Timelines.timestamp] = this@TimelineData.timestamp
+            statement[Timelines.type] = this@TimelineData.type
+        }
+        this@TimelineData.id = newId.value
+        return true
+    }
+
+    fun update(builder: (UpdateBuilder<Int>.(TimelineData) -> Unit)? = null): Boolean {
+        val recordId = id ?: return false
+        return Timelines.update({ Timelines.id eq recordId }) { statement ->
+            if (builder == null) {
                 statement[Timelines.timestamp] = this@TimelineData.timestamp
                 statement[Timelines.type] = this@TimelineData.type
+            } else {
+                builder.invoke(statement, this@TimelineData)
             }
-            this@TimelineData.id = newId.value
-            true
-        }
+        } > 0
     }
 
-    suspend fun update(builder: (UpdateBuilder<Int>.(TimelineData) -> Unit)? = null): Boolean = withContext(Dispatchers.IO) {
-        val recordId = id ?: return@withContext false
-        transaction {
-            Timelines.update({ Timelines.id eq recordId }) { statement ->
-                if (builder == null) {
-                    statement[Timelines.timestamp] = this@TimelineData.timestamp
-                    statement[Timelines.type] = this@TimelineData.type
-                } else {
-                    builder.invoke(statement, this@TimelineData)
-                }
-            } > 0
-        }
+    fun delete(): Boolean {
+        val recordId = id ?: return false
+        return Timelines.deleteWhere { Timelines.id eq recordId } > 0
     }
 
-    suspend fun delete(): Boolean = withContext(Dispatchers.IO) {
-        val recordId = id ?: return@withContext false
-        transaction {
-            Timelines.deleteWhere { Timelines.id eq recordId } > 0
-        }
-    }
-
-    suspend fun loadMetas() {
+    fun loadMetas() {
         val timelineId = id ?: return
         metas.clear()
         metas.addAll(TimelineMetaData.readByTimelineId(timelineId))

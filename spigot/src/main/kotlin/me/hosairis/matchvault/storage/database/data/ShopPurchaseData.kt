@@ -1,8 +1,6 @@
 package me.hosairis.matchvault.storage.database.data
 
 import de.marcely.bedwars.api.game.shop.ShopOpenCause
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import me.hosairis.matchvault.storage.database.MatchTeams
 import me.hosairis.matchvault.storage.database.Matches
 import me.hosairis.matchvault.storage.database.Players
@@ -14,7 +12,6 @@ import org.jetbrains.exposed.v1.core.statements.UpdateBuilder
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insertAndGetId
 import org.jetbrains.exposed.v1.jdbc.selectAll
-import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import org.jetbrains.exposed.v1.jdbc.update
 
 data class ShopPurchaseData(
@@ -29,63 +26,53 @@ data class ShopPurchaseData(
         private set
 
     companion object {
-        suspend fun read(id: Long): ShopPurchaseData? = withContext(Dispatchers.IO) {
-            transaction {
-                ShopPurchases
-                    .selectAll()
-                    .where { ShopPurchases.id eq id }
-                    .limit(1)
-                    .firstOrNull()
-                    ?.toData()
-            }
+        fun read(id: Long): ShopPurchaseData? {
+            return ShopPurchases
+                .selectAll()
+                .where { ShopPurchases.id eq id }
+                .limit(1)
+                .firstOrNull()
+                ?.toData()
         }
 
-        suspend fun readByMatchId(matchId: Long): List<ShopPurchaseData> = withContext(Dispatchers.IO) {
-            transaction {
-                val matchRef = EntityID(matchId, Matches)
-                ShopPurchases
-                    .selectAll()
-                    .where { ShopPurchases.matchId eq matchRef }
-                    .map { it.toData() }
-            }
+        fun readByMatchId(matchId: Long): List<ShopPurchaseData> {
+            val matchRef = EntityID(matchId, Matches)
+            return ShopPurchases
+                .selectAll()
+                .where { ShopPurchases.matchId eq matchRef }
+                .map { it.toData() }
         }
 
-        suspend fun readByPlayerId(playerId: Long): List<ShopPurchaseData> = withContext(Dispatchers.IO) {
-            transaction {
-                val playerRef = EntityID(playerId, Players)
-                ShopPurchases
-                    .selectAll()
-                    .where { ShopPurchases.playerId eq playerRef }
-                    .map { it.toData() }
-            }
+        fun readByPlayerId(playerId: Long): List<ShopPurchaseData> {
+            val playerRef = EntityID(playerId, Players)
+            return ShopPurchases
+                .selectAll()
+                .where { ShopPurchases.playerId eq playerRef }
+                .map { it.toData() }
         }
 
-        suspend fun readByTeamId(teamId: Long): List<ShopPurchaseData> = withContext(Dispatchers.IO) {
-            transaction {
-                val teamRef = EntityID(teamId, MatchTeams)
-                ShopPurchases
-                    .selectAll()
-                    .where { ShopPurchases.teamId eq teamRef }
-                    .map { it.toData() }
-            }
+        fun readByTeamId(teamId: Long): List<ShopPurchaseData> {
+            val teamRef = EntityID(teamId, MatchTeams)
+            return ShopPurchases
+                .selectAll()
+                .where { ShopPurchases.teamId eq teamRef }
+                .map { it.toData() }
         }
 
-        suspend fun update(
+        fun update(
             id: Long,
             builder: UpdateBuilder<Int>.(fetchRow: () -> ResultRow?) -> Unit
-        ): Boolean = withContext(Dispatchers.IO) {
-            transaction {
-                ShopPurchases.update({ ShopPurchases.id eq id }) { statement ->
-                    val fetchRow = {
-                        ShopPurchases
-                            .selectAll()
-                            .where { ShopPurchases.id eq id }
-                            .limit(1)
-                            .firstOrNull()
-                    }
-                    builder(statement, fetchRow)
-                } > 0
-            }
+        ): Boolean {
+            return ShopPurchases.update({ ShopPurchases.id eq id }) { statement ->
+                val fetchRow = {
+                    ShopPurchases
+                        .selectAll()
+                        .where { ShopPurchases.id eq id }
+                        .limit(1)
+                        .firstOrNull()
+                }
+                builder(statement, fetchRow)
+            } > 0
         }
 
         private fun ResultRow.toData(): ShopPurchaseData =
@@ -101,40 +88,34 @@ data class ShopPurchaseData(
             }
     }
 
-    suspend fun create(): Boolean = withContext(Dispatchers.IO) {
-        transaction {
-            val newId = ShopPurchases.insertAndGetId { statement ->
-                statement[ShopPurchases.matchId] = EntityID(this@ShopPurchaseData.matchId, Matches)
-                statement[ShopPurchases.playerId] = EntityID(this@ShopPurchaseData.playerId, Players)
-                statement[ShopPurchases.teamId] = EntityID(this@ShopPurchaseData.teamId, MatchTeams)
+    fun create(): Boolean {
+        val newId = ShopPurchases.insertAndGetId { statement ->
+            statement[ShopPurchases.matchId] = EntityID(this@ShopPurchaseData.matchId, Matches)
+            statement[ShopPurchases.playerId] = EntityID(this@ShopPurchaseData.playerId, Players)
+            statement[ShopPurchases.teamId] = EntityID(this@ShopPurchaseData.teamId, MatchTeams)
+            statement[ShopPurchases.item] = this@ShopPurchaseData.item
+            statement[ShopPurchases.amount] = this@ShopPurchaseData.amount
+            statement[ShopPurchases.openCause] = this@ShopPurchaseData.openCause
+        }
+        this@ShopPurchaseData.id = newId.value
+        return true
+    }
+
+    fun update(builder: (UpdateBuilder<Int>.(ShopPurchaseData) -> Unit)? = null): Boolean {
+        val recordId = id ?: return false
+        return ShopPurchases.update({ ShopPurchases.id eq recordId }) { statement ->
+            if (builder == null) {
                 statement[ShopPurchases.item] = this@ShopPurchaseData.item
                 statement[ShopPurchases.amount] = this@ShopPurchaseData.amount
                 statement[ShopPurchases.openCause] = this@ShopPurchaseData.openCause
+            } else {
+                builder.invoke(statement, this@ShopPurchaseData)
             }
-            this@ShopPurchaseData.id = newId.value
-            true
-        }
+        } > 0
     }
 
-    suspend fun update(builder: (UpdateBuilder<Int>.(ShopPurchaseData) -> Unit)? = null): Boolean = withContext(Dispatchers.IO) {
-        val recordId = id ?: return@withContext false
-        transaction {
-            ShopPurchases.update({ ShopPurchases.id eq recordId }) { statement ->
-                if (builder == null) {
-                    statement[ShopPurchases.item] = this@ShopPurchaseData.item
-                    statement[ShopPurchases.amount] = this@ShopPurchaseData.amount
-                    statement[ShopPurchases.openCause] = this@ShopPurchaseData.openCause
-                } else {
-                    builder.invoke(statement, this@ShopPurchaseData)
-                }
-            } > 0
-        }
-    }
-
-    suspend fun delete(): Boolean = withContext(Dispatchers.IO) {
-        val recordId = id ?: return@withContext false
-        transaction {
-            ShopPurchases.deleteWhere { ShopPurchases.id eq recordId } > 0
-        }
+    fun delete(): Boolean {
+        val recordId = id ?: return false
+        return ShopPurchases.deleteWhere { ShopPurchases.id eq recordId } > 0
     }
 }

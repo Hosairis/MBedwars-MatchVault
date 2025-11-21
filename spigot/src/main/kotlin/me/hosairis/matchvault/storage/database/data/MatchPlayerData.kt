@@ -1,7 +1,5 @@
 package me.hosairis.matchvault.storage.database.data
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import me.hosairis.matchvault.storage.database.MatchPlayers
 import me.hosairis.matchvault.storage.database.MatchTeams
 import me.hosairis.matchvault.storage.database.Matches
@@ -13,7 +11,6 @@ import org.jetbrains.exposed.v1.core.statements.UpdateBuilder
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insertAndGetId
 import org.jetbrains.exposed.v1.jdbc.selectAll
-import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import org.jetbrains.exposed.v1.jdbc.update
 
 data class MatchPlayerData(
@@ -38,63 +35,53 @@ data class MatchPlayerData(
         private set
 
     companion object {
-        suspend fun read(id: Long): MatchPlayerData? = withContext(Dispatchers.IO) {
-            transaction {
-                MatchPlayers
-                    .selectAll()
-                    .where { MatchPlayers.id eq id }
-                    .limit(1)
-                    .firstOrNull()
-                    ?.toData()
-            }
+        fun read(id: Long): MatchPlayerData? {
+            return MatchPlayers
+                .selectAll()
+                .where { MatchPlayers.id eq id }
+                .limit(1)
+                .firstOrNull()
+                ?.toData()
         }
 
-        suspend fun readByMatchId(matchId: Long): List<MatchPlayerData> = withContext(Dispatchers.IO) {
-            transaction {
-                val matchRef = EntityID(matchId, Matches)
-                MatchPlayers
-                    .selectAll()
-                    .where { MatchPlayers.matchId eq matchRef }
-                    .map { it.toData() }
-            }
+        fun readByMatchId(matchId: Long): List<MatchPlayerData> {
+            val matchRef = EntityID(matchId, Matches)
+            return MatchPlayers
+                .selectAll()
+                .where { MatchPlayers.matchId eq matchRef }
+                .map { it.toData() }
         }
 
-        suspend fun readByPlayerId(playerId: Long): List<MatchPlayerData> = withContext(Dispatchers.IO) {
-            transaction {
-                val playerRef = EntityID(playerId, Players)
-                MatchPlayers
-                    .selectAll()
-                    .where { MatchPlayers.playerId eq playerRef }
-                    .map { it.toData() }
-            }
+        fun readByPlayerId(playerId: Long): List<MatchPlayerData> {
+            val playerRef = EntityID(playerId, Players)
+            return MatchPlayers
+                .selectAll()
+                .where { MatchPlayers.playerId eq playerRef }
+                .map { it.toData() }
         }
 
-        suspend fun readByTeamId(teamId: Long): List<MatchPlayerData> = withContext(Dispatchers.IO) {
-            transaction {
-                val teamRef = EntityID(teamId, MatchTeams)
-                MatchPlayers
-                    .selectAll()
-                    .where { MatchPlayers.teamId eq teamRef }
-                    .map { it.toData() }
-            }
+        fun readByTeamId(teamId: Long): List<MatchPlayerData> {
+            val teamRef = EntityID(teamId, MatchTeams)
+            return MatchPlayers
+                .selectAll()
+                .where { MatchPlayers.teamId eq teamRef }
+                .map { it.toData() }
         }
 
-        suspend fun update(
+        fun update(
             id: Long,
             builder: UpdateBuilder<Int>.(fetchRow: () -> ResultRow?) -> Unit
-        ): Boolean = withContext(Dispatchers.IO) {
-            transaction {
-                MatchPlayers.update({ MatchPlayers.id eq id }) { statement ->
-                    val fetchRow = {
-                        MatchPlayers
-                            .selectAll()
-                            .where { MatchPlayers.id eq id }
-                            .limit(1)
-                            .firstOrNull()
-                    }
-                    builder(statement, fetchRow)
-                } > 0
-            }
+        ): Boolean {
+            return MatchPlayers.update({ MatchPlayers.id eq id }) { statement ->
+                val fetchRow = {
+                    MatchPlayers
+                        .selectAll()
+                        .where { MatchPlayers.id eq id }
+                        .limit(1)
+                        .firstOrNull()
+                }
+                builder(statement, fetchRow)
+            } > 0
         }
 
         private fun ResultRow.toData(): MatchPlayerData =
@@ -120,12 +107,33 @@ data class MatchPlayerData(
             }
     }
 
-    suspend fun create(): Boolean = withContext(Dispatchers.IO) {
-        transaction {
-            val newId = MatchPlayers.insertAndGetId { statement ->
-                statement[MatchPlayers.matchId] = EntityID(this@MatchPlayerData.matchId, Matches)
-                statement[MatchPlayers.playerId] = EntityID(this@MatchPlayerData.playerId, Players)
-                statement[MatchPlayers.teamId] = EntityID(this@MatchPlayerData.teamId, MatchTeams)
+    fun create(): Boolean {
+        val newId = MatchPlayers.insertAndGetId { statement ->
+            statement[MatchPlayers.matchId] = EntityID(this@MatchPlayerData.matchId, Matches)
+            statement[MatchPlayers.playerId] = EntityID(this@MatchPlayerData.playerId, Players)
+            statement[MatchPlayers.teamId] = EntityID(this@MatchPlayerData.teamId, MatchTeams)
+            statement[MatchPlayers.kills] = this@MatchPlayerData.kills
+            statement[MatchPlayers.finalKills] = this@MatchPlayerData.finalKills
+            statement[MatchPlayers.deaths] = this@MatchPlayerData.deaths
+            statement[MatchPlayers.bedsBroken] = this@MatchPlayerData.bedsBroken
+            statement[MatchPlayers.resIron] = this@MatchPlayerData.resIron
+            statement[MatchPlayers.resGold] = this@MatchPlayerData.resGold
+            statement[MatchPlayers.resDiamond] = this@MatchPlayerData.resDiamond
+            statement[MatchPlayers.resEmerald] = this@MatchPlayerData.resEmerald
+            statement[MatchPlayers.resIronSpawner] = this@MatchPlayerData.resIronSpawner
+            statement[MatchPlayers.resGoldSpawner] = this@MatchPlayerData.resGoldSpawner
+            statement[MatchPlayers.resDiamondSpawner] = this@MatchPlayerData.resDiamondSpawner
+            statement[MatchPlayers.resEmeraldSpawner] = this@MatchPlayerData.resEmeraldSpawner
+            statement[MatchPlayers.won] = this@MatchPlayerData.won
+        }
+        this@MatchPlayerData.id = newId.value
+        return true
+    }
+
+    fun update(builder: (UpdateBuilder<Int>.(MatchPlayerData) -> Unit)? = null): Boolean {
+        val recordId = id ?: return false
+        return MatchPlayers.update({ MatchPlayers.id eq recordId }) { statement ->
+            if (builder == null) {
                 statement[MatchPlayers.kills] = this@MatchPlayerData.kills
                 statement[MatchPlayers.finalKills] = this@MatchPlayerData.finalKills
                 statement[MatchPlayers.deaths] = this@MatchPlayerData.deaths
@@ -139,41 +147,14 @@ data class MatchPlayerData(
                 statement[MatchPlayers.resDiamondSpawner] = this@MatchPlayerData.resDiamondSpawner
                 statement[MatchPlayers.resEmeraldSpawner] = this@MatchPlayerData.resEmeraldSpawner
                 statement[MatchPlayers.won] = this@MatchPlayerData.won
+            } else {
+                builder.invoke(statement, this@MatchPlayerData)
             }
-            this@MatchPlayerData.id = newId.value
-            true
-        }
+        } > 0
     }
 
-    suspend fun update(builder: (UpdateBuilder<Int>.(MatchPlayerData) -> Unit)? = null): Boolean = withContext(Dispatchers.IO) {
-        val recordId = id ?: return@withContext false
-        transaction {
-            MatchPlayers.update({ MatchPlayers.id eq recordId }) { statement ->
-                if (builder == null) {
-                    statement[MatchPlayers.kills] = this@MatchPlayerData.kills
-                    statement[MatchPlayers.finalKills] = this@MatchPlayerData.finalKills
-                    statement[MatchPlayers.deaths] = this@MatchPlayerData.deaths
-                    statement[MatchPlayers.bedsBroken] = this@MatchPlayerData.bedsBroken
-                    statement[MatchPlayers.resIron] = this@MatchPlayerData.resIron
-                    statement[MatchPlayers.resGold] = this@MatchPlayerData.resGold
-                    statement[MatchPlayers.resDiamond] = this@MatchPlayerData.resDiamond
-                    statement[MatchPlayers.resEmerald] = this@MatchPlayerData.resEmerald
-                    statement[MatchPlayers.resIronSpawner] = this@MatchPlayerData.resIronSpawner
-                    statement[MatchPlayers.resGoldSpawner] = this@MatchPlayerData.resGoldSpawner
-                    statement[MatchPlayers.resDiamondSpawner] = this@MatchPlayerData.resDiamondSpawner
-                    statement[MatchPlayers.resEmeraldSpawner] = this@MatchPlayerData.resEmeraldSpawner
-                    statement[MatchPlayers.won] = this@MatchPlayerData.won
-                } else {
-                    builder.invoke(statement, this@MatchPlayerData)
-                }
-            } > 0
-        }
-    }
-
-    suspend fun delete(): Boolean = withContext(Dispatchers.IO) {
-        val recordId = id ?: return@withContext false
-        transaction {
-            MatchPlayers.deleteWhere { MatchPlayers.id eq recordId } > 0
-        }
+    fun delete(): Boolean {
+        val recordId = id ?: return false
+        return MatchPlayers.deleteWhere { MatchPlayers.id eq recordId } > 0
     }
 }

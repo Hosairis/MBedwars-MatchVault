@@ -1,7 +1,5 @@
 package me.hosairis.matchvault.storage.database.data
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import me.hosairis.matchvault.storage.config.Config
 import me.hosairis.matchvault.storage.database.MatchStatus
 import me.hosairis.matchvault.storage.database.MatchTeams
@@ -13,7 +11,6 @@ import org.jetbrains.exposed.v1.core.statements.UpdateBuilder
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insertAndGetId
 import org.jetbrains.exposed.v1.jdbc.selectAll
-import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import org.jetbrains.exposed.v1.jdbc.update
 
 data class MatchData(
@@ -46,53 +43,66 @@ data class MatchData(
         private set
 
     companion object {
-        suspend fun read(id: Long): MatchData? = withContext(Dispatchers.IO) {
-            transaction {
-                Matches
-                    .selectAll()
-                    .where { Matches.id eq id }
-                    .limit(1)
-                    .firstOrNull()
-                    ?.let { row ->
-                        MatchData(
-                            arenaName = row[Matches.arenaName],
-                            mode = row[Matches.mode],
-                            startedAt = row[Matches.startedAt],
-                            endedAt = row[Matches.endedAt],
-                            duration = row[Matches.duration],
-                            status = row[Matches.status],
-                            isTie = row[Matches.isTie],
-                            winnerTeamId = row[Matches.winnerTeamId]?.value,
-                            server = row[Matches.server]
-                        ).apply {
-                            this.id = row[Matches.id].value
-                        }
+        fun read(id: Long): MatchData? {
+            return Matches
+                .selectAll()
+                .where { Matches.id eq id }
+                .limit(1)
+                .firstOrNull()
+                ?.let { row ->
+                    MatchData(
+                        arenaName = row[Matches.arenaName],
+                        mode = row[Matches.mode],
+                        startedAt = row[Matches.startedAt],
+                        endedAt = row[Matches.endedAt],
+                        duration = row[Matches.duration],
+                        status = row[Matches.status],
+                        isTie = row[Matches.isTie],
+                        winnerTeamId = row[Matches.winnerTeamId]?.value,
+                        server = row[Matches.server]
+                    ).apply {
+                        this.id = row[Matches.id].value
                     }
-            }
+                }
         }
 
-        suspend fun update(
+        fun update(
             id: Long,
             builder: UpdateBuilder<Int>.(fetchRow: () -> ResultRow?) -> Unit
-        ): Boolean = withContext(Dispatchers.IO) {
-            transaction {
-                Matches.update({ Matches.id eq id }) { statement ->
-                    val fetchRow = {
-                        Matches
-                            .selectAll()
-                            .where { Matches.id eq id }
-                            .limit(1)
-                            .firstOrNull()
-                    }
-                    builder(statement, fetchRow)
-                } > 0
-            }
+        ): Boolean {
+            return Matches.update({ Matches.id eq id }) { statement ->
+                val fetchRow = {
+                    Matches
+                        .selectAll()
+                        .where { Matches.id eq id }
+                        .limit(1)
+                        .firstOrNull()
+                }
+                builder(statement, fetchRow)
+            } > 0
         }
     }
 
-    suspend fun create(): Boolean = withContext(Dispatchers.IO) {
-        transaction {
-            val newId = Matches.insertAndGetId { statement ->
+    fun create(): Boolean {
+        val newId = Matches.insertAndGetId { statement ->
+            statement[Matches.arenaName] = this@MatchData.arenaName
+            statement[Matches.mode] = this@MatchData.mode
+            statement[Matches.startedAt] = this@MatchData.startedAt
+            statement[Matches.endedAt] = this@MatchData.endedAt
+            statement[Matches.duration] = this@MatchData.duration
+            statement[Matches.status] = this@MatchData.status
+            statement[Matches.isTie] = this@MatchData.isTie
+            statement[Matches.winnerTeamId] = this@MatchData.winnerTeamId?.let { EntityID(it, MatchTeams) }
+            statement[Matches.server] = this@MatchData.server
+        }
+        this@MatchData.id = newId.value
+        return true
+    }
+
+    fun update(builder: (UpdateBuilder<Int>.(MatchData) -> Unit)? = null): Boolean {
+        val matchId = id ?: return false
+        return Matches.update({ Matches.id eq matchId }) { statement ->
+            if (builder == null) {
                 statement[Matches.arenaName] = this@MatchData.arenaName
                 statement[Matches.mode] = this@MatchData.mode
                 statement[Matches.startedAt] = this@MatchData.startedAt
@@ -102,65 +112,42 @@ data class MatchData(
                 statement[Matches.isTie] = this@MatchData.isTie
                 statement[Matches.winnerTeamId] = this@MatchData.winnerTeamId?.let { EntityID(it, MatchTeams) }
                 statement[Matches.server] = this@MatchData.server
+            } else {
+                builder.invoke(statement, this@MatchData)
             }
-            this@MatchData.id = newId.value
-            true
-        }
+        } > 0
     }
 
-    suspend fun update(builder: (UpdateBuilder<Int>.(MatchData) -> Unit)? = null): Boolean = withContext(Dispatchers.IO) {
-        val matchId = id ?: return@withContext false
-        transaction {
-            Matches.update({ Matches.id eq matchId }) { statement ->
-                if (builder == null) {
-                    statement[Matches.arenaName] = this@MatchData.arenaName
-                    statement[Matches.mode] = this@MatchData.mode
-                    statement[Matches.startedAt] = this@MatchData.startedAt
-                    statement[Matches.endedAt] = this@MatchData.endedAt
-                    statement[Matches.duration] = this@MatchData.duration
-                    statement[Matches.status] = this@MatchData.status
-                    statement[Matches.isTie] = this@MatchData.isTie
-                    statement[Matches.winnerTeamId] = this@MatchData.winnerTeamId?.let { EntityID(it, MatchTeams) }
-                    statement[Matches.server] = this@MatchData.server
-                } else {
-                    builder.invoke(statement, this@MatchData)
-                }
-            } > 0
-        }
+    fun delete(): Boolean {
+        val matchId = id ?: return false
+        return Matches.deleteWhere { Matches.id eq matchId } > 0
     }
 
-    suspend fun delete(): Boolean = withContext(Dispatchers.IO) {
-        val matchId = id ?: return@withContext false
-        transaction {
-            Matches.deleteWhere { Matches.id eq matchId } > 0
-        }
-    }
-
-    suspend fun loadTeams(){
+    fun loadTeams(){
         val matchId = id ?: return
         teams.clear()
         teams.addAll(MatchTeamData.readByMatchId(matchId))
     }
 
-    suspend fun loadPlayers() {
+    fun loadPlayers() {
         val matchId = id ?: return
         players.clear()
         players.addAll(MatchPlayerData.readByMatchId(matchId))
     }
 
-    suspend fun loadShopPurchases() {
+    fun loadShopPurchases() {
         val matchId = id ?: return
         shopPurchases.clear()
         shopPurchases.addAll(ShopPurchaseData.readByMatchId(matchId))
     }
 
-    suspend fun loadUpgradePurchases() {
+    fun loadUpgradePurchases() {
         val matchId = id ?: return
         upgradePurchases.clear()
         upgradePurchases.addAll(UpgradePurchaseData.readByMatchId(matchId))
     }
 
-    suspend fun loadTimelines() {
+    fun loadTimelines() {
         val matchId = id ?: return
         timelines.clear()
         timelines.addAll(TimelineData.readByMatchId(matchId))
