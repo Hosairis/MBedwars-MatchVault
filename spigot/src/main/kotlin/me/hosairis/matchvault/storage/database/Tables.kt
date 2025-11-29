@@ -81,25 +81,6 @@ object UpgradePurchases : LongIdTable("upgrade_purchases") {
     val level = integer("level").default(1)
 }
 
-object PlayerStats : LongIdTable("player_stats") {
-    val playerId = reference("player_id", Players, onDelete = ReferenceOption.CASCADE).uniqueIndex()
-    val matchesPlayed = integer("matches_played").default(0)
-    val wins = integer("wins").default(0)
-    val losses = integer("losses").default(0)
-    val kills = integer("kills").default(0)
-    val finalKills = integer("final_kills").default(0)
-    val deaths = integer("deaths").default(0)
-    val bedsBroken = integer("beds_broken").default(0)
-    val resIron = long("res_iron").default(0)
-    val resGold = long("res_gold").default(0)
-    val resDiamond = long("res_diamond").default(0)
-    val resEmerald = long("res_emerald").default(0)
-    val resIronSpawner = long("res_iron_sp").default(0)
-    val resGoldSpawner = long("res_gold_sp").default(0)
-    val resDiamondSpawner = long("res_diamond_sp").default(0)
-    val resEmeraldSpawner = long("res_emerald_sp").default(0)
-}
-
 object Timelines : LongIdTable("timelines") {
     val matchId = reference("match_id", Matches, onDelete = ReferenceOption.CASCADE).index()
     val playerId = reference("actor_id", Players, onDelete = ReferenceOption.SET_NULL).nullable().index()
