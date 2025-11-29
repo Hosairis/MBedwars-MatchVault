@@ -4,7 +4,6 @@ import me.hosairis.matchvault.helpers.CoroutineHelper
 import me.hosairis.matchvault.helpers.Log
 import me.hosairis.matchvault.storage.database.Players
 import me.hosairis.matchvault.storage.database.data.PlayerData
-import me.hosairis.matchvault.storage.database.data.PlayerStatsData
 import org.bukkit.Bukkit
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
@@ -41,14 +40,7 @@ class PlayerTracker : Listener {
                         playerData.name = playerName
                         playerData.lastSeen = timestamp
                     }
-                    val playerId = playerData.id ?: throw IllegalStateException("Missing database id for $playerName ($playerUuid)")
-
-                    val stats = PlayerStatsData.readByPlayerId(playerId)
-                    if (stats == null) {
-                        if (!PlayerStatsData(playerId = playerId).create()) {
-                            throw IllegalStateException("Failed to create stats row for $playerName ($playerUuid)")
-                        }
-                    }
+                    playerData.id ?: throw IllegalStateException("Missing database id for $playerName ($playerUuid)")
                 }
             } catch (ex: Exception) {
                 Log.warning("Error handling join for $playerName ($playerUuid): ${ex.message}")
