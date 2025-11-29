@@ -19,9 +19,6 @@ data class PlayerData(
     var id: Long? = null
         private set
 
-    var stats: PlayerStatsData? = null
-        private set
-
     companion object {
         fun read(uuid: UUID): PlayerData? {
             return Players
@@ -86,10 +83,5 @@ data class PlayerData(
 
     fun delete(): Boolean {
         return Players.deleteWhere { Players.uuid eq uuid.toString() } > 0
-    }
-
-    fun loadStats() {
-        val playerId = id ?: return
-        stats = PlayerStatsData.readByPlayerId(playerId)
     }
 }
