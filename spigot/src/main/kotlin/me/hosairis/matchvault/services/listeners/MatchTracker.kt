@@ -40,8 +40,8 @@ class MatchTracker : Listener {
                         timestamp
                     ).also {
                         if (!it.create()) throw IllegalStateException("Failed to create row in table (matches) for match ($arenaName | $mode)")
+                        it.id ?: throw NullPointerException("Data in table (matches) for match ($arenaName | $mode) is missing the ID")
                     }
-                    matchData.id ?: throw NullPointerException("Data in table (matches) for match ($arenaName | $mode) is missing the ID")
 
                     teamAssignments.forEach { (team, players) ->
                         // Create match_teams
@@ -50,8 +50,8 @@ class MatchTracker : Listener {
                             team.name
                         ).also {
                             if (!it.create()) throw IllegalStateException("Failed to create row in table (match_teams) for team (${team.name}) in match ($arenaName | $mode)")
+                            it.id ?: throw NullPointerException("Data in table (match_teams) for team (${team.name}) in match ($arenaName | $mode) is missing the ID")
                         }
-                        teamData.id ?: throw NullPointerException("Data in table (match_teams) for team (${team.name}) in match ($arenaName | $mode) is missing the ID")
 
                         for ((uuid, name) in players) {
                             // Get-or-create playerId.
@@ -62,12 +62,9 @@ class MatchTracker : Listener {
                                     firstSeen = timestamp,
                                     lastSeen = timestamp
                                 ).also {
-                                    if (!it.create()) {
-                                        throw IllegalStateException("Failed to create player row for $name ($uuid)")
-                                    }
+                                    if (!it.create()) throw IllegalStateException("Failed to create player row for $name ($uuid)")
+                                    it.id ?: throw IllegalStateException("Data in table (players) for player ($name | $uuid) is missing the ID")
                                 }
-                                player.id ?: throw IllegalStateException("Data in table (players) for player ($name | $uuid) is missing the ID")
-
                                 player.id!!  // whatever field holds the DB id
                             }
 
@@ -78,8 +75,8 @@ class MatchTracker : Listener {
                                 teamData.id!!
                             ).also {
                                 if (!it.create()) throw IllegalStateException("Failed to create row in table (match_players) for player ($name | $uuid) in team (${team.name}) in match ($arenaName | $mode)")
+                                it.id ?: throw IllegalStateException("Data in table (match_players) for player ($name | $uuid) is missing the ID")
                             }
-                            matchPlayerData.id ?: throw IllegalStateException("Data in table (match_players) for player ($name | $uuid) is missing the ID")
                         }
                     }
                     TrackerService.matchIds[arena] = matchData.id!!
