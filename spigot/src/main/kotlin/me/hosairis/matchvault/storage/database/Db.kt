@@ -75,11 +75,11 @@ object Db {
         transaction {
             SchemaUtils.create(
                 Players, Matches, MatchTeams, MatchPlayers,
-                ShopPurchases, UpgradePurchases, PlayerStats, Timelines, TimelineMetas)
+                ShopPurchases, UpgradePurchases, Timelines, TimelineMetas)
 
             val updateQueries = SchemaUtils.addMissingColumnsStatements(
                 Players, Matches, MatchTeams, MatchPlayers,
-                ShopPurchases, UpgradePurchases, PlayerStats, Timelines, TimelineMetas)
+                ShopPurchases, UpgradePurchases, Timelines, TimelineMetas)
 
             if (updateQueries.isNotEmpty()) {
                 updateQueries.forEach { query -> exec(query) }
