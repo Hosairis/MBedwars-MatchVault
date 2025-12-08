@@ -1,6 +1,7 @@
 package me.hosairis.matchvault.storage.database.data
 
 import de.marcely.bedwars.api.game.shop.ShopOpenCause
+import de.marcely.bedwars.api.game.shop.product.ShopProductType
 import me.hosairis.matchvault.storage.database.MatchTeams
 import me.hosairis.matchvault.storage.database.Matches
 import me.hosairis.matchvault.storage.database.Players
@@ -20,6 +21,7 @@ data class ShopPurchaseData(
     val teamId: Long,
     var item: String,
     var amount: Int = 1,
+    var itemType: ShopProductType,
     var openCause: ShopOpenCause
 ) {
     var id: Long? = null
@@ -82,6 +84,7 @@ data class ShopPurchaseData(
                 teamId = this[ShopPurchases.teamId].value,
                 item = this[ShopPurchases.item],
                 amount = this[ShopPurchases.amount],
+                itemType = this[ShopPurchases.itemType],
                 openCause = this[ShopPurchases.openCause]
             ).apply {
                 id = this@toData[ShopPurchases.id].value
@@ -95,6 +98,7 @@ data class ShopPurchaseData(
             statement[ShopPurchases.teamId] = EntityID(this@ShopPurchaseData.teamId, MatchTeams)
             statement[ShopPurchases.item] = this@ShopPurchaseData.item
             statement[ShopPurchases.amount] = this@ShopPurchaseData.amount
+            statement[ShopPurchases.itemType] = this@ShopPurchaseData.itemType
             statement[ShopPurchases.openCause] = this@ShopPurchaseData.openCause
         }
         this@ShopPurchaseData.id = newId.value
@@ -107,6 +111,7 @@ data class ShopPurchaseData(
             if (builder == null) {
                 statement[ShopPurchases.item] = this@ShopPurchaseData.item
                 statement[ShopPurchases.amount] = this@ShopPurchaseData.amount
+                statement[ShopPurchases.itemType] = this@ShopPurchaseData.itemType
                 statement[ShopPurchases.openCause] = this@ShopPurchaseData.openCause
             } else {
                 builder.invoke(statement, this@ShopPurchaseData)
