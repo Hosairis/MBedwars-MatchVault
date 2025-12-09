@@ -53,7 +53,8 @@ class PlayerTracker : Listener {
                             firstSeen = timestamp,
                             lastSeen = timestamp
                         ).also {
-                            if (!it.create()) throw IllegalStateException("Failed to create row in table (players) for player ($name | $uuid)")
+                            if (!it.create()) throw IllegalStateException("${if (type == Type.ENTER) "PlayerJoinEvent" else "PlayerQuitEvent"}: failed to create players row for $name ($uuid)")
+                            it.id ?: throw IllegalStateException("${if (type == Type.ENTER) "PlayerJoinEvent" else "PlayerQuitEvent"}: players row for $name ($uuid) is missing the ID")
                         }
                     } else {
                         // Update if it exists
@@ -64,7 +65,6 @@ class PlayerTracker : Listener {
                         playerData.name = name
                         playerData.lastSeen = timestamp
                     }
-                    playerData.id ?: throw IllegalStateException("Data in table (players) for player ($name | $uuid) is missing the ID")
 
                     // Store or clear player id cache
                     if (type == Type.ENTER) {
@@ -74,11 +74,7 @@ class PlayerTracker : Listener {
                     }
                 }
             } catch (ex: Exception) {
-                if (type == Type.ENTER) {
-                    Log.warning("An error occurred while handling join event: ${ex.message}")
-                } else {
-                    Log.warning("An error occurred while handling quit event: ${ex.message}")
-                }
+                Log.severe("${if (type == Type.ENTER) "PlayerJoinEvent" else "PlayerQuitEvent"}: error processing player $name ($uuid): ${ex.message}")
                 ex.printStackTrace()
 
                 //TODO: Make this configurable

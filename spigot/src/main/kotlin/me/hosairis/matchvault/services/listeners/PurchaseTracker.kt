@@ -21,7 +21,7 @@ class PurchaseTracker: Listener {
 
         val arena = event.arena
         val matchId = TrackerService.matchIds[arena] ?: run {
-            Log.severe("Failed to obtain id to match (${arena.name} | ${arena.maxPlayers})")
+            Log.severe("UpgradePurchaseEvent: missing match ID for arena ${arena.name} (maxPlayers=${arena.maxPlayers})")
             return
         }
         val player = event.player
@@ -36,14 +36,14 @@ class PurchaseTracker: Listener {
                         .find { it.team == team.name }
                         ?.takeIf { it.id != null }
                         ?: run {
-                            Log.severe("Failed to obtain team (${team.name}) from table (match_teams) from match ($matchId)")
+                            Log.severe("UpgradePurchaseEvent: team ${team.name} not found for matchId $matchId in match_teams")
                             return@transaction
                         }
                     val playerId =
                         TrackerService.playerIds[player.uniqueId]
                             ?: PlayerData.read(uuid = player.uniqueId)?.id
                             ?: run {
-                                Log.severe("Failed to obtain ID for player ${player.name} | ${player.uniqueId}")
+                                Log.severe("UpgradePurchaseEvent: missing player ID for ${player.name} (${player.uniqueId})")
                                 return@transaction
                             }
 
@@ -54,12 +54,12 @@ class PurchaseTracker: Listener {
                         upgradeName,
                         upgradeLevel
                     ).also {
-                        if (!it.create()) throw IllegalStateException("Failed to create row in table (upgrade_purchases) for player ($player | ${player.uniqueId}) in team (${team.name}) in match ($matchId) for upgrade ($upgradeName | $upgradeLevel)")
-                        it.id ?: throw IllegalStateException("Data in table (upgrade_purchases) for player ($player | ${player.uniqueId}) in match ($matchId) for upgrade ($upgradeName | $upgradeLevel) is missing the ID")
+                        if (!it.create()) throw IllegalStateException("UpgradePurchaseEvent: failed to create upgrade_purchases row for ${player.name} (${player.uniqueId}) on team ${team.name} in matchId $matchId (upgrade=$upgradeName level=$upgradeLevel)")
+                        it.id ?: throw IllegalStateException("UpgradePurchaseEvent: upgrade_purchases row missing ID for ${player.name} (${player.uniqueId}) in matchId $matchId (upgrade=$upgradeName level=$upgradeLevel)")
                     }
                 }
             } catch (ex: Exception) {
-                Log.warning("An error occurred while handling upgrade purchase event: ${ex.message}")
+                Log.warning("UpgradePurchaseEvent: error recording upgrade purchase for ${player.name} (${player.uniqueId}) in matchId $matchId: ${ex.message}")
                 ex.printStackTrace()
             }
         }
@@ -71,7 +71,7 @@ class PurchaseTracker: Listener {
 
         val arena = event.arena ?: return
         val matchId = TrackerService.matchIds[arena] ?: run {
-            Log.severe("Failed to obtain id to match (${arena.name} | ${arena.maxPlayers})")
+            Log.severe("ShopPurchaseEvent: missing match ID for arena ${arena.name} (maxPlayers=${arena.maxPlayers})")
             return
         }
         val player = event.player
@@ -97,14 +97,14 @@ class PurchaseTracker: Listener {
                         .find { it.team == team.name }
                         ?.takeIf { it.id != null }
                         ?: run {
-                            Log.severe("Failed to obtain team (${team.name}) from table (match_teams) from match ($matchId)")
+                            Log.severe("ShopPurchaseEvent: team ${team.name} not found for matchId $matchId in match_teams")
                             return@transaction
                         }
                     val playerId =
                         TrackerService.playerIds[player.uniqueId]
                             ?: PlayerData.read(uuid = player.uniqueId)?.id
                             ?: run {
-                                Log.severe("Failed to obtain ID for player ${player.name} | ${player.uniqueId}")
+                                Log.severe("ShopPurchaseEvent: missing player ID for ${player.name} (${player.uniqueId})")
                                 return@transaction
                             }
 
@@ -117,12 +117,12 @@ class PurchaseTracker: Listener {
                         itemType,
                         openCause
                     ).also {
-                        if (!it.create()) throw IllegalStateException("Failed to create row in table (shop_purchases) for player ($player | ${player.uniqueId}) in team (${team.name}) in match ($matchId) for purchase ($itemName | $amount)")
+                        if (!it.create()) throw IllegalStateException("ShopPurchaseEvent: failed to create shop_purchases row for ${player.name} (${player.uniqueId}) on team ${team.name} in matchId $matchId for purchase ($itemName x$amount)")
                     }
-                    purchaseData.id ?: throw IllegalStateException("Data in table (shop_purchases) for player ($player | ${player.uniqueId}) in match ($matchId) for upgrade ($itemName | $amount) is missing the ID")
+                    purchaseData.id ?: throw IllegalStateException("ShopPurchaseEvent: shop_purchases row missing ID for ${player.name} (${player.uniqueId}) in matchId $matchId for purchase ($itemName x$amount)")
                 }
             } catch (ex: Exception) {
-                Log.warning("An error occurred while handling shop purchase event: ${ex.message}")
+                Log.warning("ShopPurchaseEvent: error recording shop purchase for ${player.name} (${player.uniqueId}) in matchId $matchId: ${ex.message}")
                 ex.printStackTrace()
             }
         }

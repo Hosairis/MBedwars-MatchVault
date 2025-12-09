@@ -18,7 +18,7 @@ class EliminationsTracker: Listener {
 
         val arena = event.arena
         val matchId = TrackerService.matchIds[arena] ?: run {
-            Log.severe("Failed to obtain id to match (${arena.name} | ${arena.maxPlayers})")
+            Log.warning("BedBreakEvent: missing match ID for arena ${arena.name} (maxPlayers=${arena.maxPlayers})")
             return
         }
         val teamName = event.team.name
@@ -31,7 +31,7 @@ class EliminationsTracker: Listener {
                         .find { it.team == teamName }
                         ?.takeIf { it.id != null }
                         ?: run {
-                            Log.severe("Failed to obtain team (${teamName}) from table (match_teams) from match ($matchId)")
+                            Log.severe("BedBreakEvent: team $teamName not found for matchId $matchId in match_teams")
                             return@transaction
                         }
 
@@ -40,7 +40,7 @@ class EliminationsTracker: Listener {
                     }
                 }
             } catch (ex: Exception) {
-                Log.warning("An error occurred while handling bed destroyed event: ${ex.message}")
+                Log.severe("BedBreakEvent: error recording bed destruction for team $teamName in matchId $matchId: ${ex.message}")
                 ex.printStackTrace()
             }
         }
@@ -50,7 +50,7 @@ class EliminationsTracker: Listener {
     private fun onTeamElimination(event: TeamEliminateEvent) {
         val arena = event.arena
         val matchId = TrackerService.matchIds[arena] ?: run {
-            Log.severe("Failed to obtain id to match (${arena.name} | ${arena.maxPlayers})")
+            Log.warning("TeamEliminateEvent: missing match ID for arena ${arena.name} (maxPlayers=${arena.maxPlayers})")
             return
         }
         val teamName = event.team.name
@@ -64,7 +64,7 @@ class EliminationsTracker: Listener {
                         .find { it.team == teamName }
                         ?.takeIf { it.id != null }
                         ?: run {
-                            Log.severe("Failed to obtain team (${teamName}) from table (match_teams) from match ($matchId)")
+                            Log.severe("TeamEliminateEvent: team $teamName not found for matchId $matchId in match_teams")
                             return@transaction
                         }
 
@@ -74,7 +74,7 @@ class EliminationsTracker: Listener {
                     }
                 }
             } catch (ex: Exception) {
-                Log.warning("An error occurred while handling team eliminated event: ${ex.message}")
+                Log.severe("TeamEliminateEvent: error recording elimination for team $teamName in matchId $matchId: ${ex.message}")
                 ex.printStackTrace()
             }
         }

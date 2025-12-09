@@ -1,5 +1,6 @@
 package me.hosairis.matchvault.services.listeners
 
+
 import de.marcely.bedwars.api.BedwarsAPI
 import de.marcely.bedwars.api.event.player.PlayerPickupDropEvent
 import de.marcely.bedwars.api.event.player.PlayerStatChangeEvent
@@ -30,15 +31,15 @@ class StatsTracker: Listener {
 
         val player = Bukkit.getPlayer(event.stats.playerUUID)
         if (player == null || !player.isOnline) {
-            Log.info("player is null")
+            Log.warning("PlayerStatChangeEvent: player ${event.stats.playerUUID} is not online")
             return
         }
         val arena = BedwarsAPI.getGameAPI().getArenaByPlayer(player) ?: run {
-            Log.info("arena is null")
+            Log.warning("PlayerStatChangeEvent: arena not found for player ${player.name}")
             return
         }
         val matchId = TrackerService.matchIds[arena] ?: run {
-            Log.severe("Failed to obtain id to match (${arena.name} | ${arena.maxPlayers})")
+            Log.warning("PlayerStatChangeEvent: missing match ID for arena ${arena.name} (maxPlayers=${arena.maxPlayers})")
             return
         }
         val statKey = event.key
@@ -52,12 +53,12 @@ class StatsTracker: Listener {
                         TrackerService.playerIds[player.uniqueId]
                             ?: PlayerData.read(uuid = player.uniqueId)?.id
                             ?: run {
-                                Log.severe("Failed to obtain ID for player ${player.name} | ${player.uniqueId}")
+                                Log.severe("PlayerStatChangeEvent: missing player ID for ${player.name} (${player.uniqueId})")
                                 return@transaction
                             }
                     val playersData = MatchPlayerData.readByMatchId(matchId).find { it.playerId == playerId }
                         ?: run {
-                            Log.severe("Failed to obtain match player row for player (${player.name} | ${player.uniqueId}")
+                            Log.severe("PlayerStatChangeEvent: missing match player row for ${player.name} (${player.uniqueId}) in matchId $matchId")
                             return@transaction
                         }
 
@@ -79,7 +80,7 @@ class StatsTracker: Listener {
                     }
                 }
             } catch (ex: Exception) {
-                Log.warning("An error occurred while handling stats change event: ${ex.message}")
+                Log.severe("PlayerStatChangeEvent: error updating stats for ${player.name} (${player.uniqueId}) in matchId $matchId: ${ex.message}")
                 ex.printStackTrace()
             }
         }
@@ -92,12 +93,11 @@ class StatsTracker: Listener {
         Material.EMERALD)
     @EventHandler
     private fun onResourcePickup(event: PlayerPickupDropEvent) {
-        Log.info("pickup event triggered")
         if (!allowedMaterials.contains(event.item.itemStack.type)) return
 
         val arena = event.arena
         val matchId = TrackerService.matchIds[arena] ?: run {
-            Log.severe("Failed to obtain id to match (${arena.name} | ${arena.maxPlayers})")
+            Log.warning("PlayerPickupDropEvent: missing match ID for arena ${arena.name} (maxPlayers=${arena.maxPlayers})")
             return
         }
         val player = event.player
@@ -112,19 +112,19 @@ class StatsTracker: Listener {
                         TrackerService.playerIds[player.uniqueId]
                             ?: PlayerData.read(uuid = player.uniqueId)?.id
                             ?: run {
-                                Log.severe("Failed to obtain ID for player ${player.name} | ${player.uniqueId}")
+                                Log.severe("PlayerPickupDropEvent: missing player ID for ${player.name} (${player.uniqueId})")
                                 return@transaction
                             }
                     val playersData = MatchPlayerData.readByMatchId(matchId).find { it.playerId == playerId }
                         ?: run {
-                            Log.severe("Failed to obtain match player row for player (${player.name} | ${player.uniqueId}")
+                            Log.severe("PlayerPickupDropEvent: missing match player row for ${player.name} (${player.uniqueId}) in matchId $matchId")
                             return@transaction
                         }
 
                     MatchPlayerData.update(playersData.id!!) { fetchRow ->
                         val row = fetchRow()
                         if (row == null) {
-                            Log.warning("failed to fetch match player row")
+                            Log.severe("PlayerPickupDropEvent: failed to fetch match player row for ${player.name} (${player.uniqueId}) in matchId $matchId")
                             return@update
                         }
 
@@ -150,7 +150,7 @@ class StatsTracker: Listener {
                     }
                 }
             } catch (ex: Exception) {
-                Log.warning("An error occurred while handling pickup drop event: ${ex.message}")
+                Log.severe("PlayerPickupDropEvent: error updating resource pickup for ${player.name} (${player.uniqueId}) in matchId $matchId: ${ex.message}")
                 ex.printStackTrace()
             }
         }

@@ -39,8 +39,8 @@ class MatchTracker : Listener {
                         mode,
                         timestamp
                     ).also {
-                        if (!it.create()) throw IllegalStateException("Failed to create row in table (matches) for match ($arenaName | $mode)")
-                        it.id ?: throw NullPointerException("Data in table (matches) for match ($arenaName | $mode) is missing the ID")
+                        if (!it.create()) throw IllegalStateException("RoundStartEvent: failed to create matches row for arena $arenaName (mode=$mode)")
+                        it.id ?: throw NullPointerException("RoundStartEvent: matches row for arena $arenaName (mode=$mode) is missing the ID")
                     }
 
                     teamAssignments.forEach { (team, players) ->
@@ -49,8 +49,8 @@ class MatchTracker : Listener {
                             matchData.id!!,
                             team.name
                         ).also {
-                            if (!it.create()) throw IllegalStateException("Failed to create row in table (match_teams) for team (${team.name}) in match ($arenaName | $mode)")
-                            it.id ?: throw NullPointerException("Data in table (match_teams) for team (${team.name}) in match ($arenaName | $mode) is missing the ID")
+                            if (!it.create()) throw IllegalStateException("RoundStartEvent: failed to create match_teams row for team ${team.name} in arena $arenaName (mode=$mode)")
+                            it.id ?: throw NullPointerException("RoundStartEvent: match_teams row for team ${team.name} in arena $arenaName (mode=$mode) is missing the ID")
                         }
 
                         for ((uuid, name) in players) {
@@ -62,8 +62,8 @@ class MatchTracker : Listener {
                                     firstSeen = timestamp,
                                     lastSeen = timestamp
                                 ).also {
-                                    if (!it.create()) throw IllegalStateException("Failed to create player row for $name ($uuid)")
-                                    it.id ?: throw IllegalStateException("Data in table (players) for player ($name | $uuid) is missing the ID")
+                                    if (!it.create()) throw IllegalStateException("RoundStartEvent: failed to create players row for $name ($uuid)")
+                                    it.id ?: throw IllegalStateException("RoundStartEvent: players row for $name ($uuid) is missing the ID")
                                 }
                                 player.id!!  // whatever field holds the DB id
                             }
@@ -74,15 +74,15 @@ class MatchTracker : Listener {
                                 playerId,
                                 teamData.id!!
                             ).also {
-                                if (!it.create()) throw IllegalStateException("Failed to create row in table (match_players) for player ($name | $uuid) in team (${team.name}) in match ($arenaName | $mode)")
-                                it.id ?: throw IllegalStateException("Data in table (match_players) for player ($name | $uuid) is missing the ID")
+                                if (!it.create()) throw IllegalStateException("RoundStartEvent: failed to create match_players row for $name ($uuid) on team ${team.name} in arena $arenaName (mode=$mode)")
+                                it.id ?: throw IllegalStateException("RoundStartEvent: match_players row for $name ($uuid) is missing the ID")
                             }
                         }
                     }
                     TrackerService.matchIds[arena] = matchData.id!!
                 }
             } catch (ex: Exception) {
-                Log.warning("An error occurred while handling match start event: ${ex.message}")
+                Log.severe("RoundStartEvent: error creating match for arena $arenaName (mode=$mode): ${ex.message}")
                 ex.printStackTrace()
             }
         }
@@ -92,7 +92,7 @@ class MatchTracker : Listener {
     private fun onRoundEnd(event: RoundEndEvent) {
         val arena = event.arena
         val matchId = TrackerService.matchIds[arena] ?: run {
-            Log.severe("Unable to obtain id to match (${arena.name} | ${arena.maxPlayers})")
+            Log.warning("RoundEndEvent: missing match ID for arena ${arena.name} (maxPlayers=${arena.maxPlayers})")
             return
         }
         val isTie = event.isTie
@@ -116,7 +116,7 @@ class MatchTracker : Listener {
                     MatchData.update(matchId) { fetchRow ->
                         val row = fetchRow()
                         if (row == null) {
-                            Log.severe("Unable to fetch match with ID ($matchId)")
+                            Log.severe("RoundEndEvent: match $matchId not found while ending arena ${arena.name}")
                         } else {
                             this[Matches.endedAt] = timestamp
                             this[Matches.duration] = timestamp - row[Matches.startedAt]
@@ -151,7 +151,7 @@ class MatchTracker : Listener {
                                 TrackerService.playerIds[player.uniqueId]
                                     ?: PlayerData.read(uuid = player.uniqueId)?.id
                                     ?: run {
-                                        Log.severe("Failed to obtain ID for player ${player.name} | ${player.uniqueId}")
+                                        Log.severe("RoundEndEvent: missing player ID for ${player.name} (${player.uniqueId})")
                                         return@transaction
                                     }
                             MatchPlayerData.update(playerId) {
@@ -161,7 +161,7 @@ class MatchTracker : Listener {
                     }
                 }
             } catch (ex: Exception) {
-                Log.warning("An error occurred while handling match end event: ${ex.message}")
+                Log.severe("RoundEndEvent: error closing match $matchId for arena ${arena.name}: ${ex.message}")
                 ex.printStackTrace()
             } finally {
                 TrackerService.matchIds.remove(arena)
