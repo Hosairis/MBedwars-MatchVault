@@ -45,7 +45,6 @@ class StatsTracker: Listener {
         val statKey = event.key
         val newValue = event.newValue
 
-
         CoroutineHelper.runAsync {
             try {
                 transaction {
