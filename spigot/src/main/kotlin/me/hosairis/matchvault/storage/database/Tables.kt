@@ -52,7 +52,7 @@ object MatchPlayers : LongIdTable("match_players") {
     val kills = integer("kills").default(0)
     val finalKills = integer("final_kills").default(0)
     val deaths = integer("deaths").default(0)
-    val bedsBroken = integer("beds_broken").default(0)
+    val bedsDestroyed = integer("beds_destroyed").default(0)
     val resIron = long("res_iron").default(0)
     val resGold = long("res_gold").default(0)
     val resDiamond = long("res_diamond").default(0)

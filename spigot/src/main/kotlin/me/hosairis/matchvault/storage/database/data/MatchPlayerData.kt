@@ -20,7 +20,7 @@ data class MatchPlayerData(
     var kills: Int = 0,
     var finalKills: Int = 0,
     var deaths: Int = 0,
-    var bedsBroken: Int = 0,
+    var bedsDestroyed: Int = 0,
     var resIron: Long = 0,
     var resGold: Long = 0,
     var resDiamond: Long = 0,
@@ -92,7 +92,7 @@ data class MatchPlayerData(
                 kills = this[MatchPlayers.kills],
                 finalKills = this[MatchPlayers.finalKills],
                 deaths = this[MatchPlayers.deaths],
-                bedsBroken = this[MatchPlayers.bedsBroken],
+                bedsDestroyed = this[MatchPlayers.bedsDestroyed],
                 resIron = this[MatchPlayers.resIron],
                 resGold = this[MatchPlayers.resGold],
                 resDiamond = this[MatchPlayers.resDiamond],
@@ -115,7 +115,7 @@ data class MatchPlayerData(
             statement[MatchPlayers.kills] = this@MatchPlayerData.kills
             statement[MatchPlayers.finalKills] = this@MatchPlayerData.finalKills
             statement[MatchPlayers.deaths] = this@MatchPlayerData.deaths
-            statement[MatchPlayers.bedsBroken] = this@MatchPlayerData.bedsBroken
+            statement[MatchPlayers.bedsDestroyed] = this@MatchPlayerData.bedsDestroyed
             statement[MatchPlayers.resIron] = this@MatchPlayerData.resIron
             statement[MatchPlayers.resGold] = this@MatchPlayerData.resGold
             statement[MatchPlayers.resDiamond] = this@MatchPlayerData.resDiamond
@@ -137,7 +137,7 @@ data class MatchPlayerData(
                 statement[MatchPlayers.kills] = this@MatchPlayerData.kills
                 statement[MatchPlayers.finalKills] = this@MatchPlayerData.finalKills
                 statement[MatchPlayers.deaths] = this@MatchPlayerData.deaths
-                statement[MatchPlayers.bedsBroken] = this@MatchPlayerData.bedsBroken
+                statement[MatchPlayers.bedsDestroyed] = this@MatchPlayerData.bedsDestroyed
                 statement[MatchPlayers.resIron] = this@MatchPlayerData.resIron
                 statement[MatchPlayers.resGold] = this@MatchPlayerData.resGold
                 statement[MatchPlayers.resDiamond] = this@MatchPlayerData.resDiamond
