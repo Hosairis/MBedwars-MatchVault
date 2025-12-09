@@ -47,6 +47,7 @@ data class PlayerData(
                     Players
                         .selectAll()
                         .where { Players.uuid eq uuid.toString() }
+                        .forUpdate()
                         .limit(1)
                         .firstOrNull()
                 }

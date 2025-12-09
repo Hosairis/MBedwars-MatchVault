@@ -71,6 +71,7 @@ data class TimelineData(
                     Timelines
                         .selectAll()
                         .where { Timelines.id eq id }
+                        .forUpdate()
                         .limit(1)
                         .firstOrNull()
                 }

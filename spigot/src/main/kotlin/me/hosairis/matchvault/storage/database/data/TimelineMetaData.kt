@@ -46,6 +46,7 @@ data class TimelineMetaData(
                     TimelineMetas
                         .selectAll()
                         .where { TimelineMetas.id eq id }
+                        .forUpdate()
                         .limit(1)
                         .firstOrNull()
                 }

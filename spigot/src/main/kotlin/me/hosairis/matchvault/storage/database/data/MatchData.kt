@@ -75,6 +75,7 @@ data class MatchData(
                     Matches
                         .selectAll()
                         .where { Matches.id eq id }
+                        .forUpdate()
                         .limit(1)
                         .firstOrNull()
                 }

@@ -48,6 +48,7 @@ data class MatchTeamData(
                     MatchTeams
                         .selectAll()
                         .where { MatchTeams.id eq id }
+                        .forUpdate()
                         .limit(1)
                         .firstOrNull()
                 }

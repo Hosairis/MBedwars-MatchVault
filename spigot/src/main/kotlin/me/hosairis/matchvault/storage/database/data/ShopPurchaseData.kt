@@ -70,6 +70,7 @@ data class ShopPurchaseData(
                     ShopPurchases
                         .selectAll()
                         .where { ShopPurchases.id eq id }
+                        .forUpdate()
                         .limit(1)
                         .firstOrNull()
                 }

@@ -66,6 +66,7 @@ data class UpgradePurchaseData(
                     UpgradePurchases
                         .selectAll()
                         .where { UpgradePurchases.id eq id }
+                        .forUpdate()
                         .limit(1)
                         .firstOrNull()
                 }
