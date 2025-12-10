@@ -1,4 +1,4 @@
-package me.hosairis.matchvault.services.listeners
+package me.hosairis.matchvault.services.trackingservice.listeners
 
 
 import de.marcely.bedwars.api.BedwarsAPI
@@ -6,7 +6,7 @@ import de.marcely.bedwars.api.event.player.PlayerPickupDropEvent
 import de.marcely.bedwars.api.event.player.PlayerStatChangeEvent
 import me.hosairis.matchvault.helpers.CoroutineHelper
 import me.hosairis.matchvault.helpers.Log
-import me.hosairis.matchvault.services.TrackerService
+import me.hosairis.matchvault.services.trackingservice.TrackerService
 import me.hosairis.matchvault.storage.database.MatchPlayers
 import me.hosairis.matchvault.storage.database.data.MatchPlayerData
 import me.hosairis.matchvault.storage.database.data.PlayerData

@@ -1,4 +1,4 @@
-package me.hosairis.matchvault.services
+package me.hosairis.matchvault.services.trackingservice
 
 import de.marcely.bedwars.api.arena.Arena
 import java.util.UUID

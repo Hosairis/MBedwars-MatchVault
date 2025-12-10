@@ -1,10 +1,10 @@
-package me.hosairis.matchvault.services.listeners
+package me.hosairis.matchvault.services.trackingservice.listeners
 
 import de.marcely.bedwars.api.event.arena.ArenaBedBreakEvent
 import de.marcely.bedwars.api.event.arena.TeamEliminateEvent
 import me.hosairis.matchvault.helpers.CoroutineHelper
 import me.hosairis.matchvault.helpers.Log
-import me.hosairis.matchvault.services.TrackerService
+import me.hosairis.matchvault.services.trackingservice.TrackerService
 import me.hosairis.matchvault.storage.database.MatchTeams
 import me.hosairis.matchvault.storage.database.data.MatchTeamData
 import org.bukkit.event.EventHandler

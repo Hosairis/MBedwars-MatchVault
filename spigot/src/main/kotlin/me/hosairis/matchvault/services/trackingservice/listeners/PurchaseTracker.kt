@@ -1,11 +1,11 @@
-package me.hosairis.matchvault.services.listeners
+package me.hosairis.matchvault.services.trackingservice.listeners
 
 import de.marcely.bedwars.api.event.player.PlayerBuyInShopEvent
 import de.marcely.bedwars.api.event.player.PlayerBuyUpgradeEvent
 import de.marcely.bedwars.api.game.shop.product.ShopProductType
 import me.hosairis.matchvault.helpers.CoroutineHelper
 import me.hosairis.matchvault.helpers.Log
-import me.hosairis.matchvault.services.TrackerService
+import me.hosairis.matchvault.services.trackingservice.TrackerService
 import me.hosairis.matchvault.storage.database.data.MatchTeamData
 import me.hosairis.matchvault.storage.database.data.PlayerData
 import me.hosairis.matchvault.storage.database.data.ShopPurchaseData
