@@ -23,6 +23,7 @@ dependencies {
     zap(libs.exposed.jdbc)
     zap(libs.mariadb.java.client)
     zap(libs.h2.database)
+    zap(libs.triumph.gui)
 }
 
 zapper {
