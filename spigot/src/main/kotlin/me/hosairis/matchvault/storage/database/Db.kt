@@ -4,6 +4,14 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import me.hosairis.matchvault.MatchVault
 import me.hosairis.matchvault.storage.config.Config
+import me.hosairis.matchvault.storage.database.tables.MatchPlayers
+import me.hosairis.matchvault.storage.database.tables.MatchTeams
+import me.hosairis.matchvault.storage.database.tables.Matches
+import me.hosairis.matchvault.storage.database.tables.Players
+import me.hosairis.matchvault.storage.database.tables.ShopPurchases
+import me.hosairis.matchvault.storage.database.tables.TimelineMetas
+import me.hosairis.matchvault.storage.database.tables.Timelines
+import me.hosairis.matchvault.storage.database.tables.UpgradePurchases
 import org.bukkit.Bukkit
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
@@ -12,15 +20,16 @@ import java.io.File
 import javax.sql.DataSource
 
 object Db {
+
     lateinit var dataSource: DataSource
         private set
 
     fun init() {
-        val dbType = Config.DATABASE_TYPE.lowercase().takeIf {
+        val dbType = Config.values.databaseType.lowercase().takeIf {
             it in listOf("h2", "sqlite", "mysql", "mariadb")
         } ?: run {
-            Bukkit.getLogger().severe("Unsupported database type: ${Config.DATABASE_TYPE}")
-            Bukkit.getPluginManager().disablePlugin(MatchVault.getInst())
+            Bukkit.getLogger().severe("Unsupported database type: ${Config.values.databaseType}")
+            Bukkit.getPluginManager().disablePlugin(MatchVault.instance)
             return
         }
         val hikariCfg = HikariConfig().apply {
@@ -33,7 +42,7 @@ object Db {
                     driverClassName = "org.sqlite.JDBC"
                     maximumPoolSize = 1
                     minimumIdle = 1
-                    val dbFile = File(MatchVault.getAddon().dataFolder, "data.sqlite.db")
+                    val dbFile = File(MatchVault.addon.dataFolder, "data.sqlite.db")
                     dbFile.parentFile.mkdirs()
                     jdbcUrl = "jdbc:sqlite:${dbFile.absolutePath}"
                     connectionInitSql = "PRAGMA foreign_keys=ON; PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL;"
@@ -42,15 +51,15 @@ object Db {
                     driverClassName = "org.h2.Driver"
                     maximumPoolSize = 4
                     minimumIdle = 1
-                    val dbFile = File(MatchVault.getAddon().dataFolder, "data.h2")
+                    val dbFile = File(MatchVault.addon.dataFolder, "data.h2")
                     dbFile.parentFile.mkdirs()
                     jdbcUrl = "jdbc:h2:file:${dbFile.absolutePath};MODE=MySQL;AUTO_SERVER=TRUE;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=TRUE;DATABASE_TO_UPPER=FALSE;LOCK_TIMEOUT=10000;TRACE_LEVEL_FILE=0"
                 }
                 "mysql", "mariadb" -> {
                     driverClassName = "org.mariadb.jdbc.Driver"
-                    username = Config.DATABASE_USER
-                    password = Config.DATABASE_PASSWORD
-                    jdbcUrl = "jdbc:mariadb://${Config.DATABASE_HOST}:${Config.DATABASE_PORT}/${Config.DATABASE_NAME}${Config.DATABASE_PARAMETERS}"
+                    username = Config.values.databaseUser
+                    password = Config.values.databasePassword
+                    jdbcUrl = "jdbc:mariadb://${Config.values.databaseHost}:${Config.values.databasePort}/${Config.values.databaseName}${Config.values.databaseParameters}"
                     maximumPoolSize = 10
                     minimumIdle = 10
                     idleTimeout = 600000
@@ -75,7 +84,8 @@ object Db {
         transaction {
             SchemaUtils.create(
                 Players, Matches, MatchTeams, MatchPlayers,
-                ShopPurchases, UpgradePurchases, Timelines, TimelineMetas)
+                ShopPurchases, UpgradePurchases, Timelines, TimelineMetas
+            )
 
             val updateQueries = SchemaUtils.addMissingColumnsStatements(
                 Players, Matches, MatchTeams, MatchPlayers,
