@@ -5,22 +5,12 @@ database:
   host: "localhost"
   port: 3306
   user: "root"
-  password: "123456"
-  database: "matchvault"
+  password: "Admin@123"
+  name: "matchvault"
   parameters: "?useSSL=false&allowMultiQueries=true"
 
-# Advanced setting regarding plugin logic/behaviour
-advanced:
-  # Enables detailed logs for debugging
-  debug: false
-  # Leave these as-is unless you understand the queue timing mechanics.
-  database:
-    # Ticks between scheduled queue flushes
-    flush-interval: 5
-    # Maximum duration (ns) a single flush is allowed to run
-    flush-duration: 50000000
-    # Queue operations processed before re-checking the flush deadline
-    time-check-stride: 20
+# Enables detailed logs for debugging
+debug: false
 
 # DO NOT EDIT!
-config-version: 1
+config-version: 2

@@ -1,47 +1,58 @@
 package me.hosairis.matchvault.storage.config
 
-class Config private constructor() : AbstractConfig("config.yml") {
+import dev.dejvokep.boostedyaml.YamlDocument
 
-    companion object {
-        private val instance = Config()
+object Config : AbstractConfig("config.yml") {
 
-        fun init() = instance.init()
-        fun reload(): Boolean = instance.reload()
+    data class Values(
+        val serverName: String,
 
-        var SERVER_NAME: String = ""
+        val databaseType: String,
+        val databaseHost: String,
+        val databasePort: Int,
+        val databaseUser: String,
+        val databasePassword: String,
+        val databaseName: String,
+        val databaseParameters: String,
 
-        var DATABASE_TYPE: String = ""
-        var DATABASE_HOST: String = ""
-        var DATABASE_PORT: Int = 3306
-        var DATABASE_USER: String = ""
-        var DATABASE_PASSWORD: String = ""
-        var DATABASE_NAME: String = ""
-        var DATABASE_PARAMETERS: String = ""
+        val debug: Boolean,
 
-        var ADVANCED_DEBUG: Boolean = false
-        var ADVANCED_DATABASE_FLUSH_INTERVAL: Long = 5
-        var ADVANCED_DATABASE_FLUSH_DURATION: Long = 50_000_000
-        var ADVANCED_DATABASE_TIME_CHECK_STRIDE: Int = 20
+        val configVersion: Int
+    )
 
-        var CONFIG_VERSION: Int = 1
-    }
+    @Volatile
+    var values: Values = Values(
+        serverName = "unknown",
 
-    override fun loadValues() {
-        SERVER_NAME = getConfig().getString("server-name")
+        databaseType = "H2",
+        databaseHost = "localhost",
+        databasePort = 3306,
+        databaseUser = "root",
+        databasePassword = "Admin@123",
+        databaseName = "matchvault",
+        databaseParameters = "?useSSL=false&allowMultiQueries=true",
 
-        DATABASE_TYPE = getConfig().getString("database.type")
-        DATABASE_HOST = getConfig().getString("database.host")
-        DATABASE_PORT = getConfig().getInt("database.port")
-        DATABASE_USER = getConfig().getString("database.user")
-        DATABASE_PASSWORD = getConfig().getString("database.password")
-        DATABASE_NAME = getConfig().getString("database.database")
-        DATABASE_PARAMETERS = getConfig().getString("database.parameters")
+        debug = false,
 
-        ADVANCED_DEBUG = getConfig().getBoolean("advanced.debug")
-        ADVANCED_DATABASE_FLUSH_INTERVAL = getConfig().getLong("advanced.database.flush-interval")
-        ADVANCED_DATABASE_FLUSH_DURATION = getConfig().getLong("advanced.database.flush-duration")
-        ADVANCED_DATABASE_TIME_CHECK_STRIDE = getConfig().getInt("advanced.database.time-check-stride")
+        configVersion =  1
+    )
+        private set
 
-        CONFIG_VERSION = getConfig().getInt("config-version")
+    override fun loadValues(doc: YamlDocument) {
+        values = Values(
+            serverName = doc.getString("server-name"),
+
+            databaseType = doc.getString("database.type"),
+            databaseHost = doc.getString("database.host"),
+            databasePort = doc.getInt("database.port"),
+            databaseUser = doc.getString("database.user"),
+            databasePassword = doc.getString("database.password"),
+            databaseName = doc.getString("database.name"),
+            databaseParameters = doc.getString("database.parameters"),
+
+            debug = doc.getBoolean("debug"),
+
+            configVersion = doc.getInt("config-version")
+        )
     }
 }
