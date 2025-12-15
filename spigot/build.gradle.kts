@@ -62,6 +62,7 @@ tasks {
     shadowJar {
         relocate("org.bstats", "me.hosairis.matchvault.libs.bstats")
 
+        archiveFileName.set("${rootProject.name}-${project.version}.jar")
         minimize()
     }
 }
