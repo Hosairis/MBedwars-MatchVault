@@ -1,0 +1,12 @@
+package me.hosairis.matchvault.storage.database
+
+enum class MatchStatus {
+    ONGOING, ENDED, ABORTED
+}
+
+enum class EventType {
+    MATCH_START, MATCH_END, PLAYER_KILL, PLAYER_DEATH,
+    BED_BREAK, TEAM_ELIMINATED, SHOP_PURCHASE, UPGRADE_PURCHASE,
+    TRAP_PURCHASE, TRAP_TRIGGERED, RESOURCE_PICKUP, RESOURCE_DROP,
+    CHAT_MESSAGE, CUSTOM
+}
