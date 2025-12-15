@@ -16,6 +16,7 @@ import me.hosairis.matchvault.storage.database.service.MatchService
 import me.hosairis.matchvault.storage.database.service.PlayerService
 import me.hosairis.matchvault.storage.database.service.PurchaseService
 import me.hosairis.matchvault.storage.database.service.TimelineService
+import me.hosairis.matchvault.tracking.TrackerCache
 import me.hosairis.matchvault.tracking.listeners.match.EliminationsListener
 import me.hosairis.matchvault.tracking.listeners.match.MatchRoundListener
 import me.hosairis.matchvault.tracking.listeners.player.PlayerSessionListener
@@ -71,6 +72,7 @@ class MatchVault: ZapperJavaPlugin() {
         metrics = null
 
         CoroutineHelper.cancelAll()
+        TrackerCache.clearAll()
         Db.close()
     }
 
