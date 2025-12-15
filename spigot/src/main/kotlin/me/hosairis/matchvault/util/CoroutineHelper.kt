@@ -1,4 +1,4 @@
-package me.hosairis.matchvault.helpers
+package me.hosairis.matchvault.util
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -11,6 +11,7 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 object CoroutineHelper {
+
     private val job = SupervisorJob()
     private val ioScope = CoroutineScope(Dispatchers.IO + job)
 
@@ -26,8 +27,8 @@ object CoroutineHelper {
             return
         }
 
-        return suspendCancellableCoroutine { cont ->
-            val task = Bukkit.getScheduler().runTask(MatchVault.getInst()) {
+        suspendCancellableCoroutine { cont ->
+            val task = Bukkit.getScheduler().runTask(MatchVault.instance) {
                 try {
                     block()
                     if (cont.isActive) cont.resume(Unit)
