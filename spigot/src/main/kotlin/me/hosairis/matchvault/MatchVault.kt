@@ -22,6 +22,7 @@ import me.hosairis.matchvault.tracking.listeners.match.MatchRoundListener
 import me.hosairis.matchvault.tracking.listeners.player.PlayerSessionListener
 import me.hosairis.matchvault.tracking.listeners.player.PlayerStatsListener
 import me.hosairis.matchvault.tracking.listeners.purchase.PurchaseListener
+import me.hosairis.matchvault.util.MessageHelper
 import org.bstats.bukkit.Metrics
 import revxrsal.zapper.ZapperJavaPlugin
 
@@ -61,10 +62,7 @@ class MatchVault: ZapperJavaPlugin() {
 
         metrics = Metrics(this, 27239)
 
-        Log.info("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
-        Log.info("${this.description.name} v${this.description.version} Loaded")
-        Log.info("Developed by Hosairis (Dreamers Studios)")
-        Log.info("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
+        MessageHelper.printSplashScreen()
     }
 
     override fun onDisable() {
@@ -117,5 +115,8 @@ class MatchVault: ZapperJavaPlugin() {
         pm.registerEvents(MatchRoundListener(matchService), this)
         pm.registerEvents(EliminationsListener(matchService), this)
         pm.registerEvents(PurchaseListener(purchaseService, playerService, matchService), this)
+
+        // command wiring (example — adjust to your command framework)
+//         getCommand("matchhistory")?.setExecutor(MatchHistoryCMD())
     }
 }

@@ -1,5 +1,6 @@
 package me.hosairis.matchvault.util
 
+import me.hosairis.matchvault.MatchVault
 import net.md_5.bungee.api.ChatColor
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
@@ -15,5 +16,12 @@ object MessageHelper {
 
     fun sendMessage(player: CommandSender, message: String) {
         player.sendMessage(colorize(message))
+    }
+
+    fun printSplashScreen() {
+        Log.info("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
+        Log.info("${MatchVault.instance.description.name} v${MatchVault.instance.description.version} Loaded")
+        Log.info("Developed by Hosairis (Dreamers Studios)")
+        Log.info("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
     }
 }
