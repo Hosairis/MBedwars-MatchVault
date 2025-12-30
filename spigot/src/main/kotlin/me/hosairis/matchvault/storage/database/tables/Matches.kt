@@ -1,7 +1,7 @@
 package me.hosairis.matchvault.storage.database.tables
 
 import me.hosairis.matchvault.storage.config.Config
-import me.hosairis.matchvault.storage.database.MatchStatus
+import me.hosairis.matchvault.storage.database.enums.MatchStatus
 import org.jetbrains.exposed.v1.core.ReferenceOption
 import org.jetbrains.exposed.v1.core.dao.id.LongIdTable
 

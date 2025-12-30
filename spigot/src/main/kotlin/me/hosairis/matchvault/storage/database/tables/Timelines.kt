@@ -1,6 +1,6 @@
 package me.hosairis.matchvault.storage.database.tables
 
-import me.hosairis.matchvault.storage.database.EventType
+import me.hosairis.matchvault.storage.database.enums.EventType
 import org.jetbrains.exposed.v1.core.ReferenceOption
 import org.jetbrains.exposed.v1.core.dao.id.LongIdTable
 

@@ -1,6 +1,6 @@
 package me.hosairis.matchvault.storage.database.repo
 
-import me.hosairis.matchvault.storage.database.MatchStatus
+import me.hosairis.matchvault.storage.database.enums.MatchStatus
 import me.hosairis.matchvault.storage.database.model.MatchData
 import me.hosairis.matchvault.storage.database.tables.MatchTeams
 import me.hosairis.matchvault.storage.database.tables.Matches

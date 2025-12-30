@@ -1,7 +1,7 @@
 package me.hosairis.matchvault.storage.database.model
 
 import me.hosairis.matchvault.storage.config.Config
-import me.hosairis.matchvault.storage.database.MatchStatus
+import me.hosairis.matchvault.storage.database.enums.MatchStatus
 
 data class MatchData(
     val id: Long? = null,

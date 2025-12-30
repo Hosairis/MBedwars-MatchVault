@@ -1,6 +1,6 @@
 package me.hosairis.matchvault.storage.database.model
 
-import me.hosairis.matchvault.storage.database.EventType
+import me.hosairis.matchvault.storage.database.enums.EventType
 
 data class TimelineData(
     val id: Long? = null,
