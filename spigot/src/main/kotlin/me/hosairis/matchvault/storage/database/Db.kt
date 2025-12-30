@@ -17,6 +17,7 @@ import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import java.io.File
+import java.util.Locale
 import javax.sql.DataSource
 
 object Db {
@@ -25,7 +26,7 @@ object Db {
         private set
 
     fun init() {
-        val dbType = Config.values.databaseType.lowercase().takeIf {
+        val dbType = Config.values.databaseType.lowercase(Locale.ROOT).takeIf {
             it in listOf("h2", "sqlite", "mysql", "mariadb")
         } ?: run {
             Bukkit.getLogger().severe("Unsupported database type: ${Config.values.databaseType}")
@@ -82,18 +83,8 @@ object Db {
         Database.connect(dataSource)
 
         transaction {
-            SchemaUtils.create(
-                Players, Matches, MatchTeams, MatchPlayers,
-                ShopPurchases, UpgradePurchases, Timelines, TimelineMetas
-            )
-
-            val updateQueries = SchemaUtils.addMissingColumnsStatements(
-                Players, Matches, MatchTeams, MatchPlayers,
+            SchemaUtils.createMissingTablesAndColumns(Players, Matches, MatchTeams, MatchPlayers,
                 ShopPurchases, UpgradePurchases, Timelines, TimelineMetas)
-
-            if (updateQueries.isNotEmpty()) {
-                updateQueries.forEach { query -> exec(query) }
-            }
         }
     }
     fun close() {
