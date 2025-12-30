@@ -13,6 +13,6 @@ object Matches : LongIdTable("matches") {
     val duration = long("duration").nullable()
     val status = enumerationByName("status", 16, MatchStatus::class).default(MatchStatus.ONGOING).index()
     val isTie = bool("is_tie").default(false)
-    val winnerTeamId = reference("winner_team_id", MatchTeams, onDelete = ReferenceOption.CASCADE).nullable().index()
+    val winnerTeamId = reference("winner_team_id", MatchTeams, onDelete = ReferenceOption.SET_NULL).nullable().index()
     val server = varchar("server", 64).default(Config.values.serverName).index()
 }
