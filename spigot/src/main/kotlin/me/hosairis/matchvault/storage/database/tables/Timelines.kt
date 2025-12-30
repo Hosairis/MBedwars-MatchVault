@@ -11,4 +11,5 @@ object Timelines : LongIdTable("timelines") {
     val teamId = reference("team_id", MatchTeams, onDelete = ReferenceOption.CASCADE).nullable().index()
     val timestamp = long("timestamp").index()
     val type = enumerationByName("type", 32, EventType::class).index()
+    init { index(false, matchId, timestamp) }
 }
