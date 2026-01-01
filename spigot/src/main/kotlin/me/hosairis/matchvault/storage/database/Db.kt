@@ -9,8 +9,8 @@ import me.hosairis.matchvault.storage.database.tables.MatchTeams
 import me.hosairis.matchvault.storage.database.tables.Matches
 import me.hosairis.matchvault.storage.database.tables.Players
 import me.hosairis.matchvault.storage.database.tables.ShopPurchases
-import me.hosairis.matchvault.storage.database.tables.TimelineMetas
-import me.hosairis.matchvault.storage.database.tables.Timelines
+import me.hosairis.matchvault.storage.database.tables.MatchEventMetas
+import me.hosairis.matchvault.storage.database.tables.MatchEvents
 import me.hosairis.matchvault.storage.database.tables.UpgradePurchases
 import org.bukkit.Bukkit
 import org.jetbrains.exposed.v1.jdbc.Database
@@ -84,7 +84,7 @@ object Db {
 
         transaction {
             SchemaUtils.createMissingTablesAndColumns(Players, Matches, MatchTeams, MatchPlayers,
-                ShopPurchases, UpgradePurchases, Timelines, TimelineMetas)
+                ShopPurchases, UpgradePurchases, MatchEvents, MatchEventMetas)
         }
     }
     fun close() {

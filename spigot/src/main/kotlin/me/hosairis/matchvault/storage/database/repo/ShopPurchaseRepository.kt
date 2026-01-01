@@ -11,13 +11,14 @@ import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insertAndGetId
+import org.jetbrains.exposed.v1.jdbc.select
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.update
 
 class ShopPurchaseRepository {
 
-    fun create(data: ShopPurchaseData): Long =
-        ShopPurchases.insertAndGetId {
+    fun create(data: ShopPurchaseData): Long {
+        return ShopPurchases.insertAndGetId {
             it[matchId] = EntityID(data.matchId, Matches)
             it[playerId] = EntityID(data.playerId, Players)
             it[teamId] = EntityID(data.teamId, MatchTeams)
@@ -26,52 +27,66 @@ class ShopPurchaseRepository {
             it[itemType] = data.itemType
             it[openCause] = data.openCause
         }.value
+    }
 
-    fun read(id: Long): ShopPurchaseData? =
-        ShopPurchases
-            .selectAll()
-            .where { ShopPurchases.id eq id }
+    fun update(data: ShopPurchaseData): Boolean {
+        val exists = ShopPurchases
+            .select(ShopPurchases.id)
+            .where { ShopPurchases.id eq data.id }
+            .forUpdate()
             .limit(1)
-            .firstOrNull()
-            ?.toData()
+            .any()
 
-    fun readByMatchId(matchId: Long): List<ShopPurchaseData> =
-        ShopPurchases
-            .selectAll()
-            .where { ShopPurchases.matchId eq matchId }
-            .orderBy(ShopPurchases.id to SortOrder.ASC)
-            .map { it.toData() }
+        if (!exists) return false
 
-    fun readByPlayerId(playerId: Long): List<ShopPurchaseData> =
-        ShopPurchases
-            .selectAll()
-            .where { ShopPurchases.playerId eq playerId }
-            .orderBy(ShopPurchases.id to SortOrder.DESC)
-            .map { it.toData() }
-
-    fun update(data: ShopPurchaseData): Boolean =
-        ShopPurchases.update({ ShopPurchases.id eq data.id }) {
+        return ShopPurchases.update({ ShopPurchases.id eq data.id }) {
             it[teamId] = EntityID(data.teamId, MatchTeams)
             it[item] = data.item
             it[amount] = data.amount
             it[itemType] = data.itemType
             it[openCause] = data.openCause
         } > 0
+    }
 
-    fun delete(id: Long): Boolean =
-        ShopPurchases.deleteWhere { ShopPurchases.id eq id } > 0
+    fun delete(id: Long): Boolean {
+        return ShopPurchases.deleteWhere { ShopPurchases.id eq id } > 0
+    }
 
-    fun deleteByMatchId(matchId: Long): Int =
-        ShopPurchases.deleteWhere { ShopPurchases.matchId eq matchId }
+    fun read(id: Long): ShopPurchaseData? {
+        return ShopPurchases
+            .selectAll()
+            .where { ShopPurchases.id eq id }
+            .limit(1)
+            .firstOrNull()
+            ?.toData()
+    }
 
-    private fun ResultRow.toData(): ShopPurchaseData = ShopPurchaseData(
-        id = this[ShopPurchases.id].value,
-        matchId = this[ShopPurchases.matchId].value,
-        playerId = this[ShopPurchases.playerId].value,
-        teamId = this[ShopPurchases.teamId].value,
-        item = this[ShopPurchases.item],
-        amount = this[ShopPurchases.amount],
-        itemType = this[ShopPurchases.itemType],
-        openCause = this[ShopPurchases.openCause]
-    )
+    fun readByMatchId(matchId: Long): List<ShopPurchaseData> {
+        return ShopPurchases
+            .selectAll()
+            .where { ShopPurchases.matchId eq matchId }
+            .orderBy(ShopPurchases.id to SortOrder.ASC)
+            .map { it.toData() }
+    }
+
+    fun readByPlayerId(playerId: Long): List<ShopPurchaseData> {
+        return ShopPurchases
+            .selectAll()
+            .where { ShopPurchases.playerId eq playerId }
+            .orderBy(ShopPurchases.id to SortOrder.DESC)
+            .map { it.toData() }
+    }
+
+    private fun ResultRow.toData(): ShopPurchaseData {
+        return ShopPurchaseData(
+            id = this[ShopPurchases.id].value,
+            matchId = this[ShopPurchases.matchId].value,
+            playerId = this[ShopPurchases.playerId].value,
+            teamId = this[ShopPurchases.teamId].value,
+            item = this[ShopPurchases.item],
+            amount = this[ShopPurchases.amount],
+            itemType = this[ShopPurchases.itemType],
+            openCause = this[ShopPurchases.openCause]
+        )
+    }
 }
