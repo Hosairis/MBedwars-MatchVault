@@ -1,7 +1,7 @@
 package me.hosairis.matchvault.storage.database.service
 
 import de.marcely.bedwars.api.arena.Team
-import me.hosairis.matchvault.storage.database.MatchStatus
+import me.hosairis.matchvault.storage.database.enums.MatchStatus
 import me.hosairis.matchvault.storage.database.model.MatchData
 import me.hosairis.matchvault.storage.database.model.MatchPlayerData
 import me.hosairis.matchvault.storage.database.model.MatchTeamData
@@ -9,7 +9,6 @@ import me.hosairis.matchvault.storage.database.repo.MatchPlayerRepository
 import me.hosairis.matchvault.storage.database.repo.MatchRepository
 import me.hosairis.matchvault.storage.database.repo.MatchTeamRepository
 import me.hosairis.matchvault.storage.database.repo.PlayerRepository
-import me.hosairis.matchvault.util.Log
 import org.bukkit.Material
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import java.util.UUID
