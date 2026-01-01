@@ -1,6 +1,6 @@
 package me.hosairis.matchvault.storage.database.enums
 
-enum class EventType {
+enum class MatchEventType {
     MATCH_START, MATCH_END, PLAYER_KILL, PLAYER_DEATH,
     BED_BREAK, TEAM_ELIMINATED, SHOP_PURCHASE, UPGRADE_PURCHASE,
     TRAP_PURCHASE, TRAP_TRIGGERED, RESOURCE_PICKUP, RESOURCE_DROP,
