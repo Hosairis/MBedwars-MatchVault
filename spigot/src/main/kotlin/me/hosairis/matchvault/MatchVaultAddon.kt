@@ -5,8 +5,8 @@ import org.bukkit.Bukkit
 
 class MatchVaultAddon(plugin: MatchVault) : BedwarsAddon(plugin) {
     companion object {
-        const val MIN_BW_API_VER = 203
-        const val MIN_BW_VER = "5.5.3"
+        const val MIN_BW_API_VER = 205
+        const val MIN_BW_VER = "5.5.5"
     }
 
     override fun getName(): String {
