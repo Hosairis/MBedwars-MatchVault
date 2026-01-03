@@ -2,20 +2,19 @@ package me.hosairis.matchvault
 
 import me.hosairis.matchvault.storage.config.Config
 import me.hosairis.matchvault.util.CoroutineHelper
-import me.hosairis.matchvault.util.Log
 import me.hosairis.matchvault.storage.database.Db
 import me.hosairis.matchvault.storage.database.repo.MatchPlayerRepository
 import me.hosairis.matchvault.storage.database.repo.MatchRepository
 import me.hosairis.matchvault.storage.database.repo.MatchTeamRepository
 import me.hosairis.matchvault.storage.database.repo.PlayerRepository
 import me.hosairis.matchvault.storage.database.repo.ShopPurchaseRepository
-import me.hosairis.matchvault.storage.database.repo.TimelineMetaRepository
-import me.hosairis.matchvault.storage.database.repo.TimelineRepository
+import me.hosairis.matchvault.storage.database.repo.MatchEventMetaRepository
+import me.hosairis.matchvault.storage.database.repo.MatchEventRepository
 import me.hosairis.matchvault.storage.database.repo.UpgradePurchaseRepository
 import me.hosairis.matchvault.storage.database.service.MatchService
 import me.hosairis.matchvault.storage.database.service.PlayerService
 import me.hosairis.matchvault.storage.database.service.PurchaseService
-import me.hosairis.matchvault.storage.database.service.TimelineService
+import me.hosairis.matchvault.storage.database.service.MatchEventService
 import me.hosairis.matchvault.tracking.TrackerCache
 import me.hosairis.matchvault.tracking.listeners.match.EliminationsListener
 import me.hosairis.matchvault.tracking.listeners.match.MatchRoundListener
@@ -39,7 +38,7 @@ class MatchVault: ZapperJavaPlugin() {
         private set
     lateinit var purchaseService: PurchaseService
         private set
-    lateinit var timelineService: TimelineService
+    lateinit var timelineService: MatchEventService
         private set
 
     private var metrics: Metrics? = null
@@ -82,8 +81,8 @@ class MatchVault: ZapperJavaPlugin() {
         val matchPlayerRepo = MatchPlayerRepository()
         val shopRepo = ShopPurchaseRepository()
         val upgradeRepo = UpgradePurchaseRepository()
-        val timelineRepo = TimelineRepository()
-        val timelineMetaRepo = TimelineMetaRepository()
+        val timelineRepo = MatchEventRepository()
+        val timelineMetaRepo = MatchEventMetaRepository()
 
         // services
         playerService = PlayerService(playerRepo)
@@ -100,8 +99,8 @@ class MatchVault: ZapperJavaPlugin() {
             upgradeRepo = upgradeRepo
         )
 
-        timelineService = TimelineService(
-            timelineRepo = timelineRepo,
+        timelineService = MatchEventService(
+            matchEventRepo = timelineRepo,
             metaRepo = timelineMetaRepo
         )
     }
@@ -116,7 +115,6 @@ class MatchVault: ZapperJavaPlugin() {
         pm.registerEvents(EliminationsListener(matchService), this)
         pm.registerEvents(PurchaseListener(purchaseService, playerService, matchService), this)
 
-        // command wiring (example — adjust to your command framework)
-//         getCommand("matchhistory")?.setExecutor(MatchHistoryCMD())
+        // command wiring
     }
 }
