@@ -1,19 +1,19 @@
 # Add shared library versions here if needed, e.g.:
 [versions]
-kotlin = "2.2.20"                  # Kotlin plugin version
+kotlin = "2.3.0"                  # Kotlin plugin version
 zapper = "1.0.3"
-shadow = "9.1.0"                   # Shadow plugin version
-bukkit-factory = "1.2.0"           # resource-factory plugin version
-run-paper = "2.3.1"                # run-task plugin version
+shadow = "9.3.0"                   # Shadow plugin version
+bukkit-factory = "1.3.1"           # resource-factory plugin version
+run-paper = "3.0.2"                # run-task plugin version
 
 spigot = "1.8.8-R0.1-SNAPSHOT"     # Spigot server software version
-bstats = "3.0.2"
+bstats = "3.1.0"
 mbedwars = "5.5.5"
-boostedyaml = "1.3.6"
+boostedyaml = "1.3.7"
 hikaricp = "7.0.2"
-exposed-core = "1.0.0-rc-1"
-exposed-jdbc = "1.0.0-rc-1"
-mariadb-java-client = "3.5.6"
+exposed-core = "1.0.0-rc-4"
+exposed-jdbc = "1.0.0-rc-4"
+mariadb-java-client = "3.5.7"
 h2-database = "2.4.240"
 triumph-gui = "3.1.13"
 
