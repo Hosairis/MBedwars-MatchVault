@@ -37,6 +37,10 @@ class PlayerService(
         playerRepo.readByUuid(uuid)
     }
 
+    fun readIdByUuid(uuid: UUID): Long? = transaction {
+        playerRepo.readIdByUuid(uuid)
+    }
+
     fun delete(id: Long): Boolean = transaction {
         playerRepo.delete(id)
     }
