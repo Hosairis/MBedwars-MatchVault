@@ -29,7 +29,7 @@ class MatchRoundListener(
                     arenaName = arenaName,
                     mode = mode,
                     startedAt = timestamp,
-                    teamOrder = teamOrder
+                    teamMap = teamOrder
                 )
                 TrackerCache.matchIds[arena] = matchId
             } catch (ex: Exception) {
