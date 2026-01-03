@@ -20,35 +20,22 @@ class MatchService(
     private val playerRepo: PlayerRepository
 ) {
 
-    fun read(matchId: Long): MatchData? = transaction {
-        matchRepo.read(matchId)
-    }
-
-    fun readTeamByMatchIdAndTeam(matchId: Long, teamName: String): Long? = transaction {
-        teamRepo.readByMatchIdAndTeam(matchId, teamName)?.id
-    }
-
-    /**
-     * list matches a player participated in.
-     */
-    fun readMatchesOfPlayer(uuid: UUID): List<MatchData> = transaction {
-        val playerId = playerRepo.readByUuid(uuid)?.id ?: return@transaction emptyList()
-        val entries = matchPlayerRepo.readByPlayerId(playerId)
-
-        entries.mapNotNull { e -> matchRepo.read(e.matchId) }
-    }
-
     /**
      * Create match row, then create its teams and match_players rows.
      */
-    fun startMatch(arenaName: String, mode: Int, startedAt: Long, teamOrder: Map<Team, List<UUID>>): Long = transaction {
+    fun startMatch(
+        arenaName: String,
+        mode: Int,
+        startedAt: Long,
+        teamMap: Map<Team, List<UUID>>
+    ): Long = transaction {
         val matchId = matchRepo.create(MatchData(
             arenaName = arenaName,
             mode = mode,
             startedAt = startedAt
         ))
 
-        teamOrder.forEach { (team, uuids) ->
+        teamMap.forEach { (team, uuids) ->
             val teamId = teamRepo.create(MatchTeamData(
                 matchId = matchId,
                 team = team.name
@@ -66,7 +53,6 @@ class MatchService(
 
         matchId
     }
-
 
     /**
      * Finish a match: set ENDED, endedAt, duration, winner/tie.
@@ -183,50 +169,47 @@ class MatchService(
         }
     }
 
-    fun addResourcePickup(
+    fun incrementResourcePickup(
         matchId: Long,
         playerId: Long,
-        material: Material,
-        amount: Int,
-        fromSpawner: Boolean
+        resIron: Long = 0,
+        resGold: Long = 0,
+        resDiamond: Long = 0,
+        resEmerald: Long = 0,
+        resIronSpawner: Long = 0,
+        resGoldSpawner: Long = 0,
+        resDiamondSpawner: Long = 0,
+        resEmeraldSpawner: Long = 0,
     ): Boolean = transaction {
-        val a = amount.coerceAtLeast(0)
-        if (a == 0) return@transaction true
+        val matchPlayerData = matchPlayerRepo.readByMatchIdAndPlayerId(matchId = matchId, playerId = playerId) ?: return@transaction false
+        
+        matchPlayerRepo.update(matchPlayerData.copy(
+            resIron = matchPlayerData.resIron + resIron,
+            resGold = matchPlayerData.resGold + resGold,
+            resDiamond = matchPlayerData.resDiamond + resDiamond,
+            resEmerald = matchPlayerData.resEmerald + resEmerald,
+            resIronSpawner = matchPlayerData.resIronSpawner + resIronSpawner,
+            resGoldSpawner = matchPlayerData.resGoldSpawner + resGoldSpawner,
+            resDiamondSpawner = matchPlayerData.resDiamondSpawner + resDiamondSpawner,
+            resEmeraldSpawner = matchPlayerData.resEmeraldSpawner + resEmeraldSpawner
+        ))
+    }
 
-        val delta = a.toLong()
+    fun read(matchId: Long): MatchData? = transaction {
+        matchRepo.read(matchId)
+    }
 
-        val updatedRows = when (material) {
-            Material.IRON_INGOT -> matchPlayerRepo.incrementResources(
-                matchId = matchId,
-                playerId = playerId,
-                iron = delta,
-                ironSpawner = if (fromSpawner) delta else 0
-            )
+    fun readTeamByMatchIdAndTeam(matchId: Long, teamName: String): Long? = transaction {
+        teamRepo.readByMatchIdAndTeam(matchId, teamName)?.id
+    }
 
-            Material.GOLD_INGOT -> matchPlayerRepo.incrementResources(
-                matchId = matchId,
-                playerId = playerId,
-                gold = delta,
-                goldSpawner = if (fromSpawner) delta else 0
-            )
+    /**
+     * list matches a player participated in.
+     */
+    fun readMatchesOfPlayer(uuid: UUID): List<MatchData> = transaction {
+        val playerId = playerRepo.readByUuid(uuid)?.id ?: return@transaction emptyList()
+        val entries = matchPlayerRepo.readByPlayerId(playerId)
 
-            Material.DIAMOND -> matchPlayerRepo.incrementResources(
-                matchId = matchId,
-                playerId = playerId,
-                diamond = delta,
-                diamondSpawner = if (fromSpawner) delta else 0
-            )
-
-            Material.EMERALD -> matchPlayerRepo.incrementResources(
-                matchId = matchId,
-                playerId = playerId,
-                emerald = delta,
-                emeraldSpawner = if (fromSpawner) delta else 0
-            )
-
-            else -> return@transaction false
-        }
-
-        updatedRows > 0
+        entries.mapNotNull { e -> matchRepo.read(e.matchId) }
     }
 }
