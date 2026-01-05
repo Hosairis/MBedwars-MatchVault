@@ -8,9 +8,9 @@ import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.jdbc.Query
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insertAndGetId
-import org.jetbrains.exposed.v1.jdbc.select
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.update
 
@@ -27,15 +27,6 @@ class MatchTeamRepository {
     }
 
     fun update(data: MatchTeamData): Boolean {
-        val exists = MatchTeams
-            .select(MatchTeams.id)
-            .where { MatchTeams.id eq data.id }
-            .forUpdate()
-            .limit(1)
-            .any()
-
-        if (!exists) return false
-
         return MatchTeams.update({ MatchTeams.id eq data.id }) { st ->
             st[team] = data.team
             st[bedDestroyedAt] = data.bedDestroyedAt
@@ -48,26 +39,29 @@ class MatchTeamRepository {
         return MatchTeams.deleteWhere { MatchTeams.id eq id } > 0
     }
 
-    fun read(id: Long): MatchTeamData? {
+    fun read(id: Long, forUpdate: Boolean = false): MatchTeamData? {
         return MatchTeams
             .selectAll()
+            .withForUpdate(forUpdate)
             .where { MatchTeams.id eq id }
             .limit(1)
             .firstOrNull()
             ?.toData()
     }
 
-    fun readByMatchId(matchId: Long): List<MatchTeamData> {
+    fun readByMatchId(matchId: Long, forUpdate: Boolean = false): List<MatchTeamData> {
         return MatchTeams
             .selectAll()
+            .withForUpdate(forUpdate)
             .where { MatchTeams.matchId eq matchId }
             .orderBy(MatchTeams.id to SortOrder.ASC)
             .map { it.toData() }
     }
 
-    fun readByMatchIdAndTeam(matchId: Long, team: String): MatchTeamData? {
+    fun readByMatchIdAndTeam(matchId: Long, team: String, forUpdate: Boolean = false): MatchTeamData? {
         return MatchTeams
             .selectAll()
+            .withForUpdate(forUpdate)
             .where { (MatchTeams.matchId eq matchId) and (MatchTeams.team eq team) }
             .limit(1)
             .firstOrNull()
@@ -83,5 +77,9 @@ class MatchTeamRepository {
             eliminatedAt = this[MatchTeams.eliminatedAt],
             finalPlacement = this[MatchTeams.finalPlacement]
         )
+    }
+
+    private fun Query.withForUpdate(forUpdate: Boolean): Query {
+        return if (forUpdate) this.forUpdate() else this
     }
 }

@@ -9,9 +9,9 @@ import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.jdbc.Query
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insertAndGetId
-import org.jetbrains.exposed.v1.jdbc.select
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.update
 
@@ -30,15 +30,6 @@ class ShopPurchaseRepository {
     }
 
     fun update(data: ShopPurchaseData): Boolean {
-        val exists = ShopPurchases
-            .select(ShopPurchases.id)
-            .where { ShopPurchases.id eq data.id }
-            .forUpdate()
-            .limit(1)
-            .any()
-
-        if (!exists) return false
-
         return ShopPurchases.update({ ShopPurchases.id eq data.id }) {
             it[teamId] = EntityID(data.teamId, MatchTeams)
             it[item] = data.item
@@ -52,26 +43,29 @@ class ShopPurchaseRepository {
         return ShopPurchases.deleteWhere { ShopPurchases.id eq id } > 0
     }
 
-    fun read(id: Long): ShopPurchaseData? {
+    fun read(id: Long, forUpdate: Boolean = false): ShopPurchaseData? {
         return ShopPurchases
             .selectAll()
+            .withForUpdate(forUpdate)
             .where { ShopPurchases.id eq id }
             .limit(1)
             .firstOrNull()
             ?.toData()
     }
 
-    fun readByMatchId(matchId: Long): List<ShopPurchaseData> {
+    fun readByMatchId(matchId: Long, forUpdate: Boolean = false): List<ShopPurchaseData> {
         return ShopPurchases
             .selectAll()
+            .withForUpdate(forUpdate)
             .where { ShopPurchases.matchId eq matchId }
             .orderBy(ShopPurchases.id to SortOrder.ASC)
             .map { it.toData() }
     }
 
-    fun readByPlayerId(playerId: Long): List<ShopPurchaseData> {
+    fun readByPlayerId(playerId: Long, forUpdate: Boolean = false): List<ShopPurchaseData> {
         return ShopPurchases
             .selectAll()
+            .withForUpdate(forUpdate)
             .where { ShopPurchases.playerId eq playerId }
             .orderBy(ShopPurchases.id to SortOrder.DESC)
             .map { it.toData() }
@@ -88,5 +82,9 @@ class ShopPurchaseRepository {
             itemType = this[ShopPurchases.itemType],
             openCause = this[ShopPurchases.openCause]
         )
+    }
+
+    private fun Query.withForUpdate(forUpdate: Boolean): Query {
+        return if (forUpdate) this.forUpdate() else this
     }
 }

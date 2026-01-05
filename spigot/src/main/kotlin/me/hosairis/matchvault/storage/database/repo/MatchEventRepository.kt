@@ -9,9 +9,9 @@ import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.jdbc.Query
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insertAndGetId
-import org.jetbrains.exposed.v1.jdbc.select
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.update
 
@@ -29,15 +29,6 @@ class MatchEventRepository {
     }
 
     fun update(data: MatchEventData): Boolean {
-        val exists = MatchEvents
-            .select(MatchEvents.id)
-            .where { MatchEvents.id eq data.id }
-            .forUpdate()
-            .limit(1)
-            .any()
-
-        if (!exists) return false
-
         return MatchEvents.update({ MatchEvents.id eq data.id }) { st ->
             st[playerId] = data.playerId?.let { EntityID(it, Players) }
             st[targetId] = data.targetId?.let { EntityID(it, Players) }
@@ -51,25 +42,28 @@ class MatchEventRepository {
         return MatchEvents.deleteWhere { MatchEvents.id eq id } > 0
     }
 
-    fun read(id: Long): MatchEventData? {
+    fun read(id: Long, forUpdate: Boolean = false): MatchEventData? {
         return MatchEvents
             .selectAll()
+            .withForUpdate(forUpdate)
             .where { MatchEvents.id eq id }
             .limit(1)
             .firstOrNull()
             ?.toData()
     }
 
-    fun readByMatchId(matchId: Long): List<MatchEventData> {
+    fun readByMatchId(matchId: Long, forUpdate: Boolean = false): List<MatchEventData> {
         return MatchEvents
             .selectAll()
+            .withForUpdate(forUpdate)
             .where { MatchEvents.matchId eq matchId }
             .orderBy(MatchEvents.timestamp to SortOrder.ASC)
             .map { it.toData() }
     }
-    fun readByPlayerId(playerId: Long): List<MatchEventData> {
+    fun readByPlayerId(playerId: Long, forUpdate: Boolean = false): List<MatchEventData> {
         return MatchEvents
             .selectAll()
+            .withForUpdate(forUpdate)
             .where { MatchEvents.playerId eq playerId }
             .orderBy(MatchEvents.timestamp to SortOrder.DESC)
             .map { it.toData() }
@@ -85,5 +79,9 @@ class MatchEventRepository {
             timestamp = this[MatchEvents.timestamp],
             type = this[MatchEvents.type]
         )
+    }
+
+    private fun Query.withForUpdate(forUpdate: Boolean): Query {
+        return if (forUpdate) this.forUpdate() else this
     }
 }

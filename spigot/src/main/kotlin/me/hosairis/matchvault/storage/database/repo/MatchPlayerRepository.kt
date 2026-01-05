@@ -10,9 +10,9 @@ import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.jdbc.Query
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insertAndGetId
-import org.jetbrains.exposed.v1.jdbc.select
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.update
 
@@ -44,15 +44,6 @@ class MatchPlayerRepository {
     }
 
     fun update(data: MatchPlayerData): Boolean {
-        val exists = MatchPlayers
-            .select(MatchPlayers.id)
-            .where { MatchPlayers.id eq data.id }
-            .forUpdate()
-            .limit(1)
-            .any()
-
-        if (!exists) return false
-
         return MatchPlayers.update({ MatchPlayers.id eq data.id }) {
             it[teamId] = EntityID(data.teamId, MatchTeams)
 
@@ -79,34 +70,38 @@ class MatchPlayerRepository {
         return MatchPlayers.deleteWhere { MatchPlayers.id eq id } > 0
     }
 
-    fun read(id: Long): MatchPlayerData? {
+    fun read(id: Long, forUpdate: Boolean = false): MatchPlayerData? {
         return MatchPlayers
             .selectAll()
+            .withForUpdate(forUpdate)
             .where { MatchPlayers.id eq id }
             .limit(1)
             .firstOrNull()
             ?.toData()
     }
 
-    fun readByMatchId(matchId: Long): List<MatchPlayerData> {
+    fun readByMatchId(matchId: Long, forUpdate: Boolean = false): List<MatchPlayerData> {
         return MatchPlayers
             .selectAll()
+            .withForUpdate(forUpdate)
             .where { MatchPlayers.matchId eq matchId }
             .orderBy(MatchPlayers.id to SortOrder.ASC)
             .map { it.toData() }
     }
 
-    fun readByPlayerId(playerId: Long): List<MatchPlayerData> {
+    fun readByPlayerId(playerId: Long, forUpdate: Boolean = false): List<MatchPlayerData> {
         return MatchPlayers
             .selectAll()
+            .withForUpdate(forUpdate)
             .where { MatchPlayers.playerId eq playerId }
             .orderBy(MatchPlayers.matchId to SortOrder.DESC)
             .map { it.toData() }
     }
 
-    fun readByMatchIdAndPlayerId(matchId: Long, playerId: Long): MatchPlayerData? {
+    fun readByMatchIdAndPlayerId(matchId: Long, playerId: Long, forUpdate: Boolean = false): MatchPlayerData? {
         return MatchPlayers
             .selectAll()
+            .withForUpdate(forUpdate)
             .where { (MatchPlayers.matchId eq matchId) and (MatchPlayers.playerId eq playerId) }
             .limit(1)
             .firstOrNull()
@@ -137,5 +132,9 @@ class MatchPlayerRepository {
 
             won = this[MatchPlayers.won]
         )
+    }
+
+    private fun Query.withForUpdate(forUpdate: Boolean): Query {
+        return if (forUpdate) this.forUpdate() else this
     }
 }
