@@ -1,6 +1,7 @@
 package me.hosairis.matchvault.storage.database.service
 
 import de.marcely.bedwars.api.arena.Team
+import de.marcely.bedwars.tools.Helper
 import me.hosairis.matchvault.storage.database.enums.MatchStatus
 import me.hosairis.matchvault.storage.database.model.MatchData
 import me.hosairis.matchvault.storage.database.model.MatchPlayerData
@@ -169,30 +170,55 @@ class MatchService(
         }
     }
 
-    fun incrementResourcePickup(
+    fun updateResourcePickup(
         matchId: Long,
-        playerId: Long,
-        resIron: Long = 0,
-        resGold: Long = 0,
-        resDiamond: Long = 0,
-        resEmerald: Long = 0,
-        resIronSpawner: Long = 0,
-        resGoldSpawner: Long = 0,
-        resDiamondSpawner: Long = 0,
-        resEmeraldSpawner: Long = 0,
+        playerUuid: UUID,
+        material: Material,
+        amount: Int,
+        fromSpawner: Boolean
     ): Boolean = transaction {
-        val matchPlayerData = matchPlayerRepo.readByMatchIdAndPlayerId(matchId = matchId, playerId = playerId) ?: return@transaction false
-        
-        matchPlayerRepo.update(matchPlayerData.copy(
-            resIron = matchPlayerData.resIron + resIron,
-            resGold = matchPlayerData.resGold + resGold,
-            resDiamond = matchPlayerData.resDiamond + resDiamond,
-            resEmerald = matchPlayerData.resEmerald + resEmerald,
-            resIronSpawner = matchPlayerData.resIronSpawner + resIronSpawner,
-            resGoldSpawner = matchPlayerData.resGoldSpawner + resGoldSpawner,
-            resDiamondSpawner = matchPlayerData.resDiamondSpawner + resDiamondSpawner,
-            resEmeraldSpawner = matchPlayerData.resEmeraldSpawner + resEmeraldSpawner
-        ))
+        val playerId = playerRepo.readByUuid(playerUuid)?.id ?: return@transaction false
+        val matchPlayerData = matchPlayerRepo.readByMatchIdAndPlayerId(
+            matchId = matchId,
+            playerId = playerId,
+            forUpdate = true
+        ) ?: return@transaction false
+
+        when (material) {
+            Helper.get().getMaterialByName("iron_ingot") -> {
+                val spawnerAmount = if (fromSpawner) matchPlayerData.resIronSpawner + amount else matchPlayerData.resIronSpawner
+
+                matchPlayerRepo.update(matchPlayerData.copy(
+                    resIron = matchPlayerData.resIron + amount,
+                    resIronSpawner = spawnerAmount
+                ))
+            }
+            Helper.get().getMaterialByName("gold_ingot") -> {
+                val spawnerAmount = if (fromSpawner) matchPlayerData.resGoldSpawner + amount else matchPlayerData.resGoldSpawner
+
+                matchPlayerRepo.update(matchPlayerData.copy(
+                    resGold = matchPlayerData.resGold + amount,
+                    resGoldSpawner = spawnerAmount
+                ))
+            }
+            Helper.get().getMaterialByName("diamond") -> {
+                val spawnerAmount = if (fromSpawner) matchPlayerData.resDiamondSpawner + amount else matchPlayerData.resDiamondSpawner
+
+                matchPlayerRepo.update(matchPlayerData.copy(
+                    resDiamond = matchPlayerData.resDiamond + amount,
+                    resDiamondSpawner = spawnerAmount
+                ))
+            }
+            Helper.get().getMaterialByName("emerald") -> {
+                val spawnerAmount = if (fromSpawner) matchPlayerData.resEmeraldSpawner + amount else matchPlayerData.resEmeraldSpawner
+
+                matchPlayerRepo.update(matchPlayerData.copy(
+                    resEmerald = matchPlayerData.resEmerald + amount,
+                    resEmeraldSpawner = spawnerAmount
+                ))
+            }
+            else -> false
+        }
     }
 
     fun read(matchId: Long): MatchData? = transaction {

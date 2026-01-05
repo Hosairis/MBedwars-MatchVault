@@ -71,16 +71,9 @@ class PlayerStatsListener(
 
         CoroutineHelper.runAsync {
             try {
-                val playerId = TrackerCache.playerIds[uuid]
-                    ?: playerService.readByUuid(uuid)?.id
-                    ?: run {
-                        Log.severe("PlayerPickupDropEvent: missing playerId for ${player.name} ($uuid)")
-                        return@runAsync
-                    }
-
-                matchService.addResourcePickup(
+                matchService.updateResourcePickup(
                     matchId = matchId,
-                    playerId = playerId,
+                    playerUuid = uuid,
                     material = type,
                     amount = amount,
                     fromSpawner = fromSpawner
