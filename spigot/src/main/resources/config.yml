@@ -13,4 +13,4 @@ database:
 debug: false
 
 # DO NOT EDIT!
-config-version: 2
+config-version: 1
