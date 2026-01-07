@@ -1,18 +1,15 @@
-package me.hosairis.matchvault.tracking.listeners.player
+package me.hosairis.matchvault.tracking.player
 
 import me.hosairis.matchvault.util.CoroutineHelper
 import me.hosairis.matchvault.util.Log
 import me.hosairis.matchvault.storage.database.service.PlayerService
-import me.hosairis.matchvault.tracking.TrackerCache
 import org.bukkit.Bukkit
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
 
-class PlayerSessionListener(
-    private val playerService: PlayerService
-): Listener {
+class PlayerSessionListener: Listener {
 
     @EventHandler
     private fun onJoin(event: PlayerJoinEvent) {
@@ -23,12 +20,12 @@ class PlayerSessionListener(
 
         CoroutineHelper.runAsync {
             try {
-                val playerData = playerService.upsertSeen(uuid = uuid, name = name, seenAt = timestamp)
-                val id = playerData.id ?: run {
-                    Log.severe("PlayerJoinEvent: upsertSeen returned player with null id for $name ($uuid)")
-                    return@runAsync
-                }
-                TrackerCache.playerIds[uuid] = id
+                PlayerService.upsertSeen(
+                    uuid = uuid,
+                    name = name,
+                    seenAt = timestamp,
+                    cache = true
+                )
             } catch (ex: Exception) {
                 Log.severe("PlayerJoinEvent: error processing player $name ($uuid): ${ex.message}")
                 ex.printStackTrace()
@@ -50,12 +47,15 @@ class PlayerSessionListener(
 
         CoroutineHelper.runAsync {
             try {
-                playerService.upsertSeen(uuid = uuid, name = name, seenAt = timestamp)
+                PlayerService.upsertSeen(
+                    uuid = uuid,
+                    name = name,
+                    seenAt = timestamp,
+                    cache = false
+                )
             } catch (ex: Throwable) {
                 Log.severe("PlayerQuitEvent: error processing player $name ($uuid): ${ex.message}")
                 ex.printStackTrace()
-            } finally {
-                TrackerCache.playerIds.remove(uuid)
             }
         }
     }

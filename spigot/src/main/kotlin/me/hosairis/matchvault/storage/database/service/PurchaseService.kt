@@ -1,20 +1,44 @@
 package me.hosairis.matchvault.storage.database.service
 
+import de.marcely.bedwars.api.arena.Arena
+import de.marcely.bedwars.api.game.shop.ShopOpenCause
+import de.marcely.bedwars.api.game.shop.product.ShopProductType
 import me.hosairis.matchvault.storage.database.model.ShopPurchaseData
 import me.hosairis.matchvault.storage.database.model.UpgradePurchaseData
 import me.hosairis.matchvault.storage.database.repo.ShopPurchaseRepository
 import me.hosairis.matchvault.storage.database.repo.UpgradePurchaseRepository
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
+import java.util.UUID
 
-class PurchaseService(
-    private val shopRepo: ShopPurchaseRepository,
-    private val upgradeRepo: UpgradePurchaseRepository
-) {
+object PurchaseService {
+    private val shopRepo = ShopPurchaseRepository()
+    private val upgradeRepo = UpgradePurchaseRepository()
 
     // ---- Shop purchases ----
 
-    fun createShopPurchase(data: ShopPurchaseData): Long = transaction {
-        shopRepo.create(data.copy(id = null))
+    fun createShopPurchase(
+        arena: Arena,
+        playerUuid: UUID,
+        teamName: String,
+        itemName: String,
+        amount: Int,
+        itemType: ShopProductType,
+        openCause: ShopOpenCause
+    ): Long = transaction {
+        val matchId = MatchService.readMatchId(arena) ?: return@transaction -1
+        val playerId = PlayerService.readIdByUuid(playerUuid) ?: return@transaction -1
+        val teamId = MatchService.readTeamByMatchIdAndTeam(matchId, teamName) ?: return@transaction -1
+
+        val shopPurchaseData = ShopPurchaseData(
+            matchId = matchId,
+            playerId = playerId,
+            teamId = teamId,
+            item = itemName,
+            amount = amount,
+            itemType = itemType,
+            openCause = openCause
+        )
+        shopRepo.create(shopPurchaseData)
     }
 
     fun readShopPurchase(id: Long): ShopPurchaseData? = transaction {
@@ -35,8 +59,25 @@ class PurchaseService(
 
     // ---- Upgrade purchases ----
 
-    fun createUpgradePurchase(data: UpgradePurchaseData): Long = transaction {
-        upgradeRepo.create(data.copy(id = null))
+    fun createUpgradePurchase(
+        arena: Arena,
+        playerUuid: UUID,
+        teamName: String,
+        upgradeName: String,
+        upgradeLevel: Int
+    ): Long = transaction {
+        val matchId = MatchService.readMatchId(arena) ?: return@transaction -1
+        val playerId = PlayerService.readIdByUuid(playerUuid) ?: return@transaction -1
+        val teamId = MatchService.readTeamByMatchIdAndTeam(matchId, teamName) ?: return@transaction -1
+
+        val upgradePurchaseData = UpgradePurchaseData(
+            matchId = matchId,
+            playerId = playerId,
+            teamId = teamId,
+            upgrade = upgradeName,
+            level = upgradeLevel
+        )
+        upgradeRepo.create(upgradePurchaseData)
     }
 
     fun readUpgradePurchase(id: Long): UpgradePurchaseData? = transaction {

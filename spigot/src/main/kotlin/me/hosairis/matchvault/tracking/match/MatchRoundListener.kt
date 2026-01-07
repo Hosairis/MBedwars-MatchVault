@@ -1,17 +1,14 @@
-package me.hosairis.matchvault.tracking.listeners.match
+package me.hosairis.matchvault.tracking.match
 
 import de.marcely.bedwars.api.event.arena.RoundEndEvent
 import de.marcely.bedwars.api.event.arena.RoundStartEvent
 import me.hosairis.matchvault.util.CoroutineHelper
 import me.hosairis.matchvault.util.Log
 import me.hosairis.matchvault.storage.database.service.MatchService
-import me.hosairis.matchvault.tracking.TrackerCache
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 
-class MatchRoundListener(
-    private val matchService: MatchService
-): Listener {
+class MatchRoundListener: Listener {
 
     @EventHandler
     private fun onRoundStart(event: RoundStartEvent) {
@@ -25,13 +22,13 @@ class MatchRoundListener(
 
         CoroutineHelper.runAsync {
             try {
-                val matchId = matchService.startMatch(
+                val matchId = MatchService.startMatch(
+                    arena = arena,
                     arenaName = arenaName,
                     mode = mode,
                     startedAt = timestamp,
                     teamMap = teamOrder
                 )
-                TrackerCache.matchIds[arena] = matchId
             } catch (ex: Exception) {
                 Log.severe("RoundStartEvent: error creating match for arena ${arena.name}: ${ex.message}")
                 ex.printStackTrace()
@@ -42,11 +39,6 @@ class MatchRoundListener(
     @EventHandler
     private fun onRoundEnd(event: RoundEndEvent) {
         val arena = event.arena
-        val matchId = TrackerCache.matchIds[arena] ?: run {
-            Log.warning("RoundEndEvent: missing match ID for arena ${arena.name} (maxPlayers=${arena.maxPlayers})")
-            return
-        }
-
         val endedAt = System.currentTimeMillis()
         val isTie = event.isTie
         val winnerTeamName = event.winnerTeam?.name
@@ -54,18 +46,16 @@ class MatchRoundListener(
 
         CoroutineHelper.runAsync {
             try {
-                matchService.endMatch(
-                    matchId = matchId,
+                MatchService.endMatch(
+                    arena = arena,
                     endedAt = endedAt,
                     isTie = isTie,
                     winnerTeamName = winnerTeamName,
                     winnersUuids = winnersUuids
                 )
             } catch (ex: Exception) {
-                Log.severe("RoundEndEvent: error ending match $matchId for arena ${arena.name}: ${ex.message}")
+                Log.severe("RoundEndEvent: error ending for arena ${arena.name}: ${ex.message}")
                 ex.printStackTrace()
-            } finally {
-                TrackerCache.matchIds.remove(arena)
             }
         }
     }

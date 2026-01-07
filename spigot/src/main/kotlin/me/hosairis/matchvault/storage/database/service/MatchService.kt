@@ -1,7 +1,9 @@
 package me.hosairis.matchvault.storage.database.service
 
+import de.marcely.bedwars.api.arena.Arena
 import de.marcely.bedwars.api.arena.Team
 import de.marcely.bedwars.tools.Helper
+import me.hosairis.matchvault.storage.database.cache.MatchCache
 import me.hosairis.matchvault.storage.database.enums.MatchStatus
 import me.hosairis.matchvault.storage.database.model.MatchData
 import me.hosairis.matchvault.storage.database.model.MatchPlayerData
@@ -14,22 +16,20 @@ import org.bukkit.Material
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import java.util.UUID
 
-class MatchService(
-    private val matchRepo: MatchRepository,
-    private val teamRepo: MatchTeamRepository,
-    private val matchPlayerRepo: MatchPlayerRepository,
-    private val playerRepo: PlayerRepository
-) {
+object MatchService {
+    private val matchRepo = MatchRepository()
+    private val teamRepo = MatchTeamRepository()
+    private val matchPlayerRepo = MatchPlayerRepository()
+    private val playerRepo = PlayerRepository()
 
-    /**
-     * Create match row, then create its teams and match_players rows.
-     */
     fun startMatch(
+        arena: Arena,
         arenaName: String,
         mode: Int,
         startedAt: Long,
         teamMap: Map<Team, List<UUID>>
     ): Long = transaction {
+
         val matchId = matchRepo.create(MatchData(
             arenaName = arenaName,
             mode = mode,
@@ -52,28 +52,29 @@ class MatchService(
             }
         }
 
+        MatchCache.put(arena, matchId)
         matchId
     }
 
-    /**
-     * Finish a match: set ENDED, endedAt, duration, winner/tie.
-     */
     fun endMatch(
-        matchId: Long,
+        arena: Arena,
         endedAt: Long,
         isTie: Boolean,
         winnerTeamName: String?,
         winnersUuids: List<UUID>
     ): Boolean = transaction {
-        val match = matchRepo.read(matchId) ?: return@transaction false
-        val duration = endedAt - match.startedAt
-        val teams = teamRepo.readByMatchId(matchId)
+
+        val matchData = MatchCache.getId(arena)?.let { id ->
+            matchRepo.read(id)
+        } ?: return@transaction false
+        val duration = endedAt - matchData.startedAt
+        val teams = teamRepo.readByMatchId(matchData.id!!)
         val winnerTeamId: Long? =
             if (isTie || winnerTeamName == null) null
             else teams.firstOrNull { it.team == winnerTeamName }?.id
 
         matchRepo.update(
-            match.copy(
+            matchData.copy(
                 endedAt = endedAt,
                 duration = duration,
                 status = MatchStatus.ENDED,
@@ -97,7 +98,7 @@ class MatchService(
         if (winnersUuids.isNotEmpty()) {
             for (uuid in winnersUuids) {
                 val playerId = playerRepo.readByUuid(uuid)?.id ?: continue
-                val mp = matchPlayerRepo.readByMatchIdAndPlayerId(matchId, playerId) ?: continue
+                val mp = matchPlayerRepo.readByMatchIdAndPlayerId(matchData.id, playerId) ?: continue
 
                 if (!mp.won) {
                     matchPlayerRepo.update(mp.copy(won = true))
@@ -105,20 +106,30 @@ class MatchService(
             }
         }
 
+        MatchCache.remove(arena)
         true
     }
 
-    fun abortMatch(matchId: Long, abortedAt: Long = System.currentTimeMillis()): Boolean = transaction {
-        val match = matchRepo.read(matchId) ?: return@transaction false
-        val duration = abortedAt - match.startedAt
+    fun abortMatch(
+        arena: Arena,
+        abortedAt: Long = System.currentTimeMillis()
+    ): Boolean = transaction {
 
-        matchRepo.update(
-            match.copy(
+        val matchData = MatchCache.getId(arena)?.let { id ->
+            matchRepo.read(id)
+        } ?: return@transaction false
+        val duration = abortedAt - matchData.startedAt
+
+        val result = matchRepo.update(
+            matchData.copy(
                 endedAt = abortedAt,
                 duration = duration,
                 status = MatchStatus.ABORTED
             )
         )
+
+        MatchCache.remove(arena)
+        result
     }
 
     /**
@@ -129,21 +140,29 @@ class MatchService(
     }
 
     fun recordBedBreak(
-        matchId: Long,
+        arena: Arena,
         teamName: String,
         timestamp: Long
     ): Boolean = transaction {
-        val team = teamRepo.readByMatchIdAndTeam(matchId, teamName) ?: return@transaction false
+
+        val matchData = MatchCache.getId(arena)?.let { id ->
+            matchRepo.read(id)
+        } ?: return@transaction false
+        val team = teamRepo.readByMatchIdAndTeam(matchData.id!!, teamName) ?: return@transaction false
         teamRepo.update(team.copy(bedDestroyedAt = timestamp))
     }
 
     fun recordTeamElimination(
-        matchId: Long,
+        arena: Arena,
         teamName: String,
         placement: Int,
         timestamp: Long
     ): Boolean = transaction {
-        val team = teamRepo.readByMatchIdAndTeam(matchId, teamName) ?: return@transaction false
+
+        val matchData = MatchCache.getId(arena)?.let { id ->
+            matchRepo.read(id)
+        } ?: return@transaction false
+        val team = teamRepo.readByMatchIdAndTeam(matchData.id!!, teamName) ?: return@transaction false
         teamRepo.update(
             team.copy(
                 eliminatedAt = timestamp,
@@ -153,13 +172,17 @@ class MatchService(
     }
 
     fun updateMatchPlayerStat(
-        matchId: Long,
+        arena: Arena,
         playerUuid: UUID,
         statKey: String,
         newValue: Int
     ): Boolean = transaction {
+
+        val matchData = MatchCache.getId(arena)?.let { id ->
+            matchRepo.read(id)
+        } ?: return@transaction false
         val playerId = playerRepo.readByUuid(playerUuid)?.id ?: return@transaction false
-        val mp = matchPlayerRepo.readByMatchIdAndPlayerId(matchId, playerId) ?: return@transaction false
+        val mp = matchPlayerRepo.readByMatchIdAndPlayerId(matchData.id!!, playerId) ?: return@transaction false
 
         when (statKey) {
             "bedwars:kills" -> matchPlayerRepo.update(mp.copy(kills = newValue))
@@ -171,15 +194,19 @@ class MatchService(
     }
 
     fun updateResourcePickup(
-        matchId: Long,
+        arena: Arena,
         playerUuid: UUID,
         material: Material,
         amount: Int,
         fromSpawner: Boolean
     ): Boolean = transaction {
+
+        val matchData = MatchCache.getId(arena)?.let { id ->
+            matchRepo.read(id)
+        } ?: return@transaction false
         val playerId = playerRepo.readByUuid(playerUuid)?.id ?: return@transaction false
         val matchPlayerData = matchPlayerRepo.readByMatchIdAndPlayerId(
-            matchId = matchId,
+            matchId = matchData.id!!,
             playerId = playerId,
             forUpdate = true
         ) ?: return@transaction false
@@ -221,9 +248,11 @@ class MatchService(
         }
     }
 
-    fun read(matchId: Long): MatchData? = transaction {
-        matchRepo.read(matchId)
+    fun readMatch(arena: Arena): MatchData? = transaction {
+        MatchCache.getId(arena)?.let { matchRepo.read(it) }
     }
+
+    fun readMatchId(arena: Arena): Long? = MatchCache.getId(arena)
 
     fun readTeamByMatchIdAndTeam(matchId: Long, teamName: String): Long? = transaction {
         teamRepo.readByMatchIdAndTeam(matchId, teamName)?.id

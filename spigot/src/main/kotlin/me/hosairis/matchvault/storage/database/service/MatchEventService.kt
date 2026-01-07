@@ -6,10 +6,9 @@ import me.hosairis.matchvault.storage.database.repo.MatchEventMetaRepository
 import me.hosairis.matchvault.storage.database.repo.MatchEventRepository
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 
-class MatchEventService(
-    private val matchEventRepo: MatchEventRepository,
-    private val metaRepo: MatchEventMetaRepository
-) {
+object MatchEventService {
+    private val matchEventRepo = MatchEventRepository()
+    private val metaRepo = MatchEventMetaRepository()
 
     /**
      * Create a timeline event and optional metas in ONE transaction.
