@@ -16,6 +16,7 @@ dependencies {
     compileOnly(libs.mbedwars)
 
     implementation(libs.bstats)
+//    implementation(libs.caffeine)
 
     zap(libs.boostedyaml)
     zap(libs.hikaricp) { exclude("org.slf4j") }

@@ -15,6 +15,7 @@ exposed-core = "1.0.0-rc-4"
 exposed-jdbc = "1.0.0-rc-4"
 mariadb-java-client = "3.5.7"
 h2-database = "2.4.240"
+caffeine = "2.9.3"
 triumph-gui = "3.1.13"
 
 # Add shared libraries here if needed, e.g.:
@@ -28,6 +29,7 @@ exposed-core = { module = "org.jetbrains.exposed:exposed-core", version.ref = "e
 exposed-jdbc = { module = "org.jetbrains.exposed:exposed-jdbc", version.ref = "exposed-jdbc" }
 mariadb-java-client = { module = "org.mariadb.jdbc:mariadb-java-client", version.ref = "mariadb-java-client" }
 h2-database = { module = "com.h2database:h2", version.ref = "h2-database" }
+caffeine = { module = "com.github.ben-manes.caffeine:caffeine", version.ref = "caffeine" }
 triumph-gui = { module = "dev.triumphteam:triumph-gui", version.ref = "triumph-gui" }
 
 # Add shared plugins here if needed, e.g.:
