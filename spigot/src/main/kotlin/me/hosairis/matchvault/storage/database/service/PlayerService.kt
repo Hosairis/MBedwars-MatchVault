@@ -1,5 +1,6 @@
 package me.hosairis.matchvault.storage.database.service
 
+import me.hosairis.matchvault.storage.database.cache.MatchHistoryCache
 import me.hosairis.matchvault.storage.database.cache.PlayerCache
 import me.hosairis.matchvault.storage.database.model.PlayerData
 import me.hosairis.matchvault.storage.database.repo.PlayerRepository
@@ -26,12 +27,12 @@ object PlayerService {
                     lastSeen = seenAt
                 )
             )
-            if (cache) PlayerCache.put(uuid, newId) else PlayerCache.remove(uuid)
+            if (cache) PlayerCache.put(uuid, name, newId) else PlayerCache.remove(uuid, name)
             playerRepo.read(newId) ?: throw NullPointerException("Failed to read created player id=$newId")
         } else {
             val updated = existing.copy(name = name, lastSeen = seenAt)
             playerRepo.update(updated)
-            if (cache) PlayerCache.put(uuid, updated.id!!) else PlayerCache.remove(uuid)
+            if (cache) PlayerCache.put(uuid, name, updated.id!!) else PlayerCache.remove(uuid, name)
             updated
         }
     }
@@ -44,9 +45,28 @@ object PlayerService {
         playerRepo.readByUuid(uuid)
     }
 
+    fun readByName(name: String): PlayerData? = transaction {
+        playerRepo.readByName(name)
+    }
+
     fun readIdByUuid(uuid: UUID): Long? {
         return PlayerCache.getId(uuid) ?: transaction {
             playerRepo.readIdByUuid(uuid)
+        }
+    }
+
+    fun readIdByName(name: String): Long? {
+        return PlayerCache.getId(name) ?: transaction {
+            playerRepo.readIdByName(name)
+        }
+    }
+
+    fun readUuidById(id: Long): UUID? {
+        return MatchHistoryCache.getPlayerUuid(id) ?: transaction {
+            val uuid = UUID.fromString(playerRepo.readUuidById(id))
+            MatchHistoryCache.putPlayerUuid(id, uuid)
+
+            uuid
         }
     }
 

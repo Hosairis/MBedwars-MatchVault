@@ -4,6 +4,7 @@ import de.marcely.bedwars.api.arena.Arena
 import de.marcely.bedwars.api.arena.Team
 import de.marcely.bedwars.tools.Helper
 import me.hosairis.matchvault.storage.database.cache.MatchCache
+import me.hosairis.matchvault.storage.database.cache.MatchHistoryCache
 import me.hosairis.matchvault.storage.database.enums.MatchStatus
 import me.hosairis.matchvault.storage.database.model.MatchData
 import me.hosairis.matchvault.storage.database.model.MatchPlayerData
@@ -249,7 +250,7 @@ object MatchService {
     }
 
     fun readMatch(arena: Arena): MatchData? = transaction {
-        MatchCache.getId(arena)?.let { matchRepo.read(it) }
+        readMatchId(arena)?.let { matchRepo.read(it) }
     }
 
     fun readMatchId(arena: Arena): Long? = MatchCache.getId(arena)
@@ -261,10 +262,52 @@ object MatchService {
     /**
      * list matches a player participated in.
      */
-    fun readMatchesOfPlayer(uuid: UUID): List<MatchData> = transaction {
-        val playerId = playerRepo.readByUuid(uuid)?.id ?: return@transaction emptyList()
-        val entries = matchPlayerRepo.readByPlayerId(playerId)
+    fun readMatchesOfPlayer(playerName: String): Map<MatchData, Boolean> = transaction {
+        val cachedMatchList = MatchHistoryCache.getMatchList(playerName)
+        if (cachedMatchList != null) {
+            return@transaction cachedMatchList
+        } else {
+            val playerId = PlayerService.readIdByName(playerName) ?: return@transaction emptyMap()
+            val entries = matchPlayerRepo.readByPlayerId(playerId)
+            val map = mutableMapOf<MatchData, Boolean>()
 
-        entries.mapNotNull { e -> matchRepo.read(e.matchId) }
+            for (matchPlayerData in entries) {
+                val matchData = matchRepo.read(matchPlayerData.matchId) ?: continue
+                map[matchData] = matchPlayerData.won
+                MatchHistoryCache.putPlayerTeamIdInMatch(playerName, matchPlayerData.matchId, matchPlayerData.teamId)
+            }
+            MatchHistoryCache.putMatchList(playerName, map)
+
+            return@transaction map
+        }
+    }
+
+    fun readTeamsOfMatch(matchId: Long): List<MatchTeamData> = transaction {
+        val cachedTeamList = MatchHistoryCache.getTeamList(matchId)
+        if (cachedTeamList != null) {
+            return@transaction cachedTeamList
+        } else {
+            val teamList = teamRepo.readByMatchId(matchId)
+            MatchHistoryCache.putTeamList(matchId, teamList)
+            return@transaction teamList
+        }
+    }
+
+    fun readPlayersOfTeam(teamId: Long): List<MatchPlayerData> = transaction {
+        val cachedPlayerList = MatchHistoryCache.getPlayerList(teamId)
+        if (cachedPlayerList != null) {
+            return@transaction cachedPlayerList
+        } else {
+            val playerList = matchPlayerRepo.readByTeamId(teamId)
+            MatchHistoryCache.putPlayerList(teamId, playerList)
+            return@transaction playerList
+        }
+    }
+
+    fun readTeamOfPlayer(matchId: Long, playerName: String): MatchTeamData? = transaction {
+        val playerId = PlayerService.readIdByName(playerName) ?: return@transaction null
+        val matchPlayerData = matchPlayerRepo.readByMatchIdAndPlayerId(matchId, playerId) ?: return@transaction null
+
+        return@transaction teamRepo.read(matchPlayerData.teamId)
     }
 }
