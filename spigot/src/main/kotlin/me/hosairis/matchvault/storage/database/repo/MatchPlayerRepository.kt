@@ -98,6 +98,15 @@ class MatchPlayerRepository {
             .map { it.toData() }
     }
 
+    fun readByTeamId(teamId: Long, forUpdate: Boolean = false): List<MatchPlayerData> {
+        return MatchPlayers
+            .selectAll()
+            .withForUpdate(forUpdate)
+            .where { MatchPlayers.teamId eq teamId }
+            .orderBy(MatchPlayers.matchId to SortOrder.DESC)
+            .map { it.toData() }
+    }
+
     fun readByMatchIdAndPlayerId(matchId: Long, playerId: Long, forUpdate: Boolean = false): MatchPlayerData? {
         return MatchPlayers
             .selectAll()
