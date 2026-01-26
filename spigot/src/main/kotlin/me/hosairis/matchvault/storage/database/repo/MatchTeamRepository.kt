@@ -54,7 +54,7 @@ class MatchTeamRepository {
             .selectAll()
             .withForUpdate(forUpdate)
             .where { MatchTeams.matchId eq matchId }
-            .orderBy(MatchTeams.id to SortOrder.ASC)
+            .orderBy(MatchTeams.finalPlacement to SortOrder.ASC)
             .map { it.toData() }
     }
 
