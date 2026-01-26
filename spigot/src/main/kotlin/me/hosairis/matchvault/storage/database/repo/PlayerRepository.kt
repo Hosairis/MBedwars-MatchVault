@@ -56,6 +56,16 @@ class PlayerRepository {
             ?.toData()
     }
 
+    fun readByName(name: String, forUpdate: Boolean = false): PlayerData? {
+        return Players
+            .selectAll()
+            .withForUpdate(forUpdate)
+            .where { Players.name eq name }
+            .limit(1)
+            .firstOrNull()
+            ?.toData()
+    }
+
     fun readIdByUuid(uuid: UUID, forUpdate: Boolean = false): Long? {
         return Players
             .select(Players.id)
@@ -65,6 +75,37 @@ class PlayerRepository {
             .firstOrNull()
             ?.get(Players.id)
             ?.value
+    }
+
+    fun readIdByName(name: String, forUpdate: Boolean = false): Long? {
+        return Players
+            .select(Players.id)
+            .withForUpdate(forUpdate)
+            .where { Players.name eq name }
+            .limit(1)
+            .firstOrNull()
+            ?.get(Players.id)
+            ?.value
+    }
+
+    fun readUuidById(id: Long, forUpdate: Boolean = false): String? {
+        return Players
+            .select(Players.uuid)
+            .withForUpdate(forUpdate)
+            .where { Players.id eq id }
+            .limit(1)
+            .firstOrNull()
+            ?.get(Players.uuid)
+    }
+
+    fun readNameById(id: Long, forUpdate: Boolean = false): String? {
+        return Players
+            .select(Players.name)
+            .withForUpdate(forUpdate)
+            .where { Players.id eq id }
+            .limit(1)
+            .firstOrNull()
+            ?.get(Players.name)
     }
 
     private fun ResultRow.toData(): PlayerData {
