@@ -262,52 +262,41 @@ object MatchService {
     /**
      * list matches a player participated in.
      */
-    fun readMatchesOfPlayer(playerName: String): Map<MatchData, Boolean> = transaction {
-        val cachedMatchList = MatchHistoryCache.getMatchList(playerName)
-        if (cachedMatchList != null) {
-            return@transaction cachedMatchList
-        } else {
+    fun readMatchesOfPlayer(playerName: String): Map<MatchData, Boolean> {
+        return MatchHistoryCache.getMatchList(playerName) ?: transaction {
             val playerId = PlayerService.readIdByName(playerName) ?: return@transaction emptyMap()
-            val entries = matchPlayerRepo.readByPlayerId(playerId)
-            val map = mutableMapOf<MatchData, Boolean>()
 
-            for (matchPlayerData in entries) {
-                val matchData = matchRepo.read(matchPlayerData.matchId) ?: continue
-                map[matchData] = matchPlayerData.won
-                MatchHistoryCache.putPlayerTeamIdInMatch(playerName, matchPlayerData.matchId, matchPlayerData.teamId)
+            val result = mutableMapOf<MatchData, Boolean>()
+            for (entry in matchPlayerRepo.readByPlayerId(playerId)) {
+                val match = matchRepo.read(entry.matchId) ?: continue
+                result[match] = entry.won
+                MatchHistoryCache.putPlayerTeamIdInMatch(playerName, entry.matchId, entry.teamId)
             }
-            MatchHistoryCache.putMatchList(playerName, map)
 
-            return@transaction map
+            MatchHistoryCache.putMatchList(playerName, result)
+            result
         }
     }
 
-    fun readTeamsOfMatch(matchId: Long): List<MatchTeamData> = transaction {
-        val cachedTeamList = MatchHistoryCache.getTeamList(matchId)
-        if (cachedTeamList != null) {
-            return@transaction cachedTeamList
-        } else {
-            val teamList = teamRepo.readByMatchId(matchId)
-            MatchHistoryCache.putTeamList(matchId, teamList)
-            return@transaction teamList
+    fun readTeamsOfMatch(matchId: Long): List<MatchTeamData> {
+        return MatchHistoryCache.getTeamList(matchId) ?: transaction {
+            teamRepo.readByMatchId(matchId).also { MatchHistoryCache.putTeamList(matchId, it) }
         }
     }
 
-    fun readPlayersOfTeam(teamId: Long): List<MatchPlayerData> = transaction {
-        val cachedPlayerList = MatchHistoryCache.getPlayerList(teamId)
-        if (cachedPlayerList != null) {
-            return@transaction cachedPlayerList
-        } else {
-            val playerList = matchPlayerRepo.readByTeamId(teamId)
-            MatchHistoryCache.putPlayerList(teamId, playerList)
-            return@transaction playerList
+    fun readPlayersOfTeam(teamId: Long): List<MatchPlayerData> {
+        return MatchHistoryCache.getPlayerList(teamId) ?: transaction {
+            matchPlayerRepo.readByTeamId(teamId).also { MatchHistoryCache.putPlayerList(teamId, it) }
         }
     }
 
-    fun readTeamOfPlayer(matchId: Long, playerName: String): MatchTeamData? = transaction {
-        val playerId = PlayerService.readIdByName(playerName) ?: return@transaction null
-        val matchPlayerData = matchPlayerRepo.readByMatchIdAndPlayerId(matchId, playerId) ?: return@transaction null
+    fun readTeamIdOfPlayer1(matchId: Long, playerName: String): Long? {
+        return MatchHistoryCache.getTeamIdInMatch(playerName, matchId) ?: transaction {
+            val playerId = PlayerService.readIdByName(playerName) ?: return@transaction null
+            val matchPlayer = matchPlayerRepo.readByMatchIdAndPlayerId(matchId, playerId) ?: return@transaction null
 
-        return@transaction teamRepo.read(matchPlayerData.teamId)
+            MatchHistoryCache.putPlayerTeamIdInMatch(playerName, matchId, matchPlayer.teamId)
+            matchPlayer.teamId
+        }
     }
 }
