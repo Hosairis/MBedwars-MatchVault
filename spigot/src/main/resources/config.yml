@@ -9,8 +9,5 @@ database:
   name: "matchvault"
   parameters: "?useSSL=false&allowMultiQueries=true"
 
-# Enables detailed logs for debugging
-debug: false
-
 # DO NOT EDIT!
 config-version: 1

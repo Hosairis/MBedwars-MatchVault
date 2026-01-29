@@ -15,8 +15,6 @@ object Config : AbstractConfig("config.yml") {
         val databaseName: String,
         val databaseParameters: String,
 
-        val debug: Boolean,
-
         val configVersion: Int
     )
 
@@ -31,8 +29,6 @@ object Config : AbstractConfig("config.yml") {
         databasePassword = "Admin@123",
         databaseName = "matchvault",
         databaseParameters = "?useSSL=false&allowMultiQueries=true",
-
-        debug = false,
 
         configVersion =  1
     )
@@ -49,8 +45,6 @@ object Config : AbstractConfig("config.yml") {
             databasePassword = doc.getString("database.password"),
             databaseName = doc.getString("database.name"),
             databaseParameters = doc.getString("database.parameters"),
-
-            debug = doc.getBoolean("debug"),
 
             configVersion = doc.getInt("config-version")
         )

@@ -16,9 +16,4 @@ object Log {
     fun severe(input: String) {
         MatchVault.instance.logger.severe(input)
     }
-
-    fun debug(input: String) {
-        if (!Config.values.debug) return
-        MatchVault.instance.logger.info("[DEBUG] $input")
-    }
 }
