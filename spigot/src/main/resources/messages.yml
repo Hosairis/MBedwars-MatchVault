@@ -1,4 +1,4 @@
-prefix: "&7[&bMatchVault&7]&r"
+prefix: "&7[&bMVA&7]&r"
 
 no-recorded-matches: "%prefix &7You &4do not &7have any recorded matches."
 no-recorded-matches-others: "%prefix &7Player &4%player &7does not have any recorded matches."
