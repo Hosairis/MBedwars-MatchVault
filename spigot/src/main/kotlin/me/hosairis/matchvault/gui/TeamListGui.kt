@@ -27,13 +27,12 @@ object TeamListGui {
         gui.open(player)
 
         CoroutineHelper.runAsync {
-            //TODO: sort by placement
             val teamDataList = MatchService.readTeamsOfMatch(matchId)
-            val playerTeamId = MatchService.readTeamOfPlayer(matchId, name)
+            val playerTeamId = MatchService.readTeamIdOfPlayer(matchId, name)
 
             CoroutineHelper.runSync {
                 teamDataList.forEach { teamData ->
-                    gui.addItem(createTeamItem(teamData, teamData.id == playerTeamId?.id) { PlayerListGui.open(player, teamData.id!!, target) })
+                    gui.addItem(createTeamItem(teamData, teamData.id == playerTeamId) { PlayerListGui.open(player, matchId, teamData.id!!, target) })
                 }
                 gui.update()
             }

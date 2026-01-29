@@ -20,10 +20,10 @@ import org.bukkit.entity.Player
 
 object PlayerListGui {
 
-    fun open(player: Player, teamId: Long, target: String? = null) {
+    fun open(player: Player, matchId: Long, teamId: Long, target: String? = null) {
         val gui = createGui()
         val name = target ?: player.name
-        gui.setItem(0, CommonGuiItems.backItem { MatchListGui.open(player, target) })
+        gui.setItem(0, CommonGuiItems.backItem { TeamListGui.open(player, matchId, target) })
 
         gui.open(player)
 
