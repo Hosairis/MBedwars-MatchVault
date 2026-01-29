@@ -1,35 +1,39 @@
 package me.hosairis.matchvault.storage.database.cache
 
+import com.github.benmanes.caffeine.cache.Cache
+import com.github.benmanes.caffeine.cache.Caffeine
 import me.hosairis.matchvault.storage.database.model.MatchData
 import me.hosairis.matchvault.storage.database.model.MatchPlayerData
 import me.hosairis.matchvault.storage.database.model.MatchTeamData
-import java.time.Duration
 import java.util.UUID
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ConcurrentMap
+import java.util.concurrent.TimeUnit
 
 internal object MatchHistoryCache {
-    private val nameToMatchList = ConcurrentHashMap<String, Map<MatchData, Boolean>>()
-//        Caffeine
-//            .newBuilder()
-//            .expireAfterWrite(Duration.ofMinutes(5))
-//            .build<String, Map<MatchData, Boolean>>()
 
-    private val matchToTeamList = ConcurrentHashMap<Long, List<MatchTeamData>>()
-//        Caffeine
-//            .newBuilder()
-//            .expireAfterWrite(Duration.ofMinutes(10))
-//            .build<Long, List<MatchTeamData>>()
+    private val nameToMatchList: Cache<String, Map<MatchData, Boolean>> =
+        Caffeine.newBuilder()
+            .expireAfterWrite(1, TimeUnit.HOURS)
+            .build()
 
-    private val teamToPlayerList = ConcurrentHashMap<Long, List<MatchPlayerData>>()
-//        Caffeine
-//            .newBuilder()
-//            .expireAfterWrite(Duration.ofMinutes(10))
-//            .build<Long, List<MatchPlayerData>>()
+    private val matchToTeamList: Cache<Long, List<MatchTeamData>> =
+        Caffeine.newBuilder()
+            .expireAfterWrite(1, TimeUnit.HOURS)
+            .build()
 
-    private val playerIdToUuid = ConcurrentHashMap<Long, UUID>()
+    private val teamToPlayerList: Cache<Long, List<MatchPlayerData>> =
+        Caffeine.newBuilder()
+            .expireAfterWrite(1, TimeUnit.HOURS)
+            .build()
 
-    private val playerToTeamInMatch = ConcurrentHashMap<String, Map<Long, Long>>()
+    private val playerIdToUuid: Cache<Long, UUID> =
+        Caffeine.newBuilder()
+            .expireAfterWrite(1, TimeUnit.HOURS)
+            .build()
+
+    private val playerToTeamInMatch: Cache<String, Long> =
+        Caffeine.newBuilder()
+            .expireAfterWrite(1, TimeUnit.HOURS)
+            .build()
 
     // ---------- Inserts ---------- //
 
@@ -50,33 +54,23 @@ internal object MatchHistoryCache {
     }
 
     fun putPlayerTeamIdInMatch(playerName: String, matchId: Long, teamId: Long) {
-        val data = playerToTeamInMatch.get(playerName)?.toMutableMap() ?: return
-        data.put(matchId, teamId)
-        playerToTeamInMatch.put(playerName, data)
+        playerToTeamInMatch.put("$playerName|$matchId", teamId)
     }
 
     // ---------- Retrievals ---------- //
 
-    fun getMatchList(playerName: String): Map<MatchData, Boolean>? {
-        return nameToMatchList.get(playerName)
-//        return nameToMatchList.getIfPresent(playerName)
-    }
+    fun getMatchList(playerName: String): Map<MatchData, Boolean>? =
+        nameToMatchList.getIfPresent(playerName)
 
-    fun getTeamList(matchId: Long): List<MatchTeamData>? {
-        return matchToTeamList.get(matchId)
-//        return matchToTeamList.getIfPresent(matchId)
-    }
+    fun getTeamList(matchId: Long): List<MatchTeamData>? =
+        matchToTeamList.getIfPresent(matchId)
 
-    fun getPlayerList(teamId: Long): List<MatchPlayerData>? {
-        return teamToPlayerList.get(teamId)
-//        return teamToPlayerList.getIfPresent(teamId)
-    }
+    fun getPlayerList(teamId: Long): List<MatchPlayerData>? =
+        teamToPlayerList.getIfPresent(teamId)
 
-    fun getPlayerUuid(id: Long): UUID? {
-        return playerIdToUuid.get(id)
-    }
+    fun getPlayerUuid(id: Long): UUID? =
+        playerIdToUuid.getIfPresent(id)
 
-    fun getTeamIdInMatch(playerName: String, matchId: Long): Long? {
-        return playerToTeamInMatch.get(playerName)?.get(matchId)
-    }
+    fun getTeamIdInMatch(playerName: String, matchId: Long): Long? =
+        playerToTeamInMatch.getIfPresent("$playerName|$matchId")
 }
