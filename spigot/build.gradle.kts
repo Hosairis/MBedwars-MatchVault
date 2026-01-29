@@ -1,3 +1,5 @@
+import xyz.jpenilla.resourcefactory.bukkit.Permission
+
 plugins {
     alias(libs.plugins.zapper)
     alias(libs.plugins.bukkit.factory)      // Bukkit resource factory plugin for generating plugin.yml at build time
@@ -16,9 +18,9 @@ dependencies {
     compileOnly(libs.mbedwars)
 
     implementation(libs.bstats)
-//    implementation(libs.caffeine)
 
     zap(libs.boostedyaml)
+    zap(libs.caffeine)
     zap(libs.hikaricp) { exclude("org.slf4j") }
     zap(libs.exposed.core)
     zap(libs.exposed.jdbc)
@@ -74,4 +76,16 @@ bukkitPluginYaml {
     authors.add("Hosairis")
     apiVersion = "1.13"
     depend.add("MBedwars")
+    commands {
+        create("matchvault") {
+            description = "Main command for MatchVault"
+            usage = "/matchvault <subcommand>"
+            aliases.addAll(listOf("mvault", "matchv", "mva", "mava"))
+        }
+    }
+    permissions {
+        create("mva.commands.reload") {
+            default = Permission.Default.OP
+        }
+    }
 }

@@ -1,6 +1,6 @@
 package me.hosairis.matchvault
 
-import me.hosairis.matchvault.command.HistoryCMD
+import me.hosairis.matchvault.command.MatchVaultCMD
 import me.hosairis.matchvault.storage.config.Config
 import me.hosairis.matchvault.storage.config.Messages
 import me.hosairis.matchvault.util.CoroutineHelper
@@ -26,14 +26,13 @@ class MatchVault: ZapperJavaPlugin() {
 
     override fun onEnable() {
         instance = this
-
         addon = MatchVaultAddon(this).registerAddon()
 
         Config.init(addon.dataFolder)
         Messages.init(addon.dataFolder)
+
         Db.init()
 
-        // 4) register listeners/commands
         registerEntrypoints()
 
         MatchService.abortOngoingMatchesOnStartup(Config.values.serverName)
@@ -53,16 +52,15 @@ class MatchVault: ZapperJavaPlugin() {
     }
 
     private fun registerEntrypoints() {
-        val pm = server.pluginManager
-
         // tracking listeners (inject services)
-        pm.registerEvents(PlayerSessionListener(), this)
-        pm.registerEvents(PlayerStatsListener(), this)
-        pm.registerEvents(MatchRoundListener(), this)
-        pm.registerEvents(EliminationsListener(), this)
-        pm.registerEvents(PurchaseListener(), this)
+        server.pluginManager.registerEvents(PlayerSessionListener(), this)
+        server.pluginManager.registerEvents(PlayerStatsListener(), this)
+        server.pluginManager.registerEvents(MatchRoundListener(), this)
+        server.pluginManager.registerEvents(EliminationsListener(), this)
+        server.pluginManager.registerEvents(PurchaseListener(), this)
 
         // command wiring
-        getCommand("matchhistory").executor = HistoryCMD()
+        getCommand("matchvault").executor = MatchVaultCMD()
+//        getCommand("matchhistory").executor = HistoryCMD()
     }
 }
