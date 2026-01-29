@@ -290,7 +290,7 @@ object MatchService {
         }
     }
 
-    fun readTeamIdOfPlayer1(matchId: Long, playerName: String): Long? {
+    fun readTeamIdOfPlayer(matchId: Long, playerName: String): Long? {
         return MatchHistoryCache.getTeamIdInMatch(playerName, matchId) ?: transaction {
             val playerId = PlayerService.readIdByName(playerName) ?: return@transaction null
             val matchPlayer = matchPlayerRepo.readByMatchIdAndPlayerId(matchId, playerId) ?: return@transaction null
