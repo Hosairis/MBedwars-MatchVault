@@ -56,7 +56,7 @@ object MatchListGui {
         val material = if (matchData.status == MatchStatus.ONGOING) {
             Helper.get().getMaterialByName("blue_terracotta") ?: Material.ITEM_FRAME
         } else if (matchData.status == MatchStatus.ABORTED) {
-            Helper.get().getMaterialByName("gray_terracotta") ?: Material.ITEM_FRAME
+            Helper.get().getMaterialByName("yellow_terracotta") ?: Material.ITEM_FRAME
         } else if (won) {
             Helper.get().getMaterialByName("lime_terracotta") ?: Material.ITEM_FRAME
         } else {
@@ -77,7 +77,7 @@ object MatchListGui {
                 Component.text(MessageHelper.colorize("&7Duration:")),
                 Component.text(MessageHelper.colorize("    &f${if (matchData.duration == null) "N/A" else TimeUtil.formatDuration(matchData.duration)}")),
                 Component.text(MessageHelper.colorize("&r")),
-                Component.text(MessageHelper.colorize("&7Status: ${if (won) "&aWin" else "&4Lose"}")),
+                Component.text(MessageHelper.colorize("&7Status: ${if (matchData.status == MatchStatus.ABORTED) "&6Aborted" else if (won) "&aWin" else "&4Lose"}")),
             )
             .build()
 
