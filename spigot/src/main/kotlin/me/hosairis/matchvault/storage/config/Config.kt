@@ -1,6 +1,7 @@
 package me.hosairis.matchvault.storage.config
 
 import dev.dejvokep.boostedyaml.YamlDocument
+import kotlin.String
 
 object Config : AbstractConfig("config.yml") {
 
@@ -14,6 +15,38 @@ object Config : AbstractConfig("config.yml") {
         val databasePassword: String,
         val databaseName: String,
         val databaseParameters: String,
+
+        val matchGuiTitle: String,
+        val matchGuiPrevItemSlot: Int,
+        val matchGuiNextItemSlot: Int,
+        val matchGuiFinishNull: String,
+        val matchGuiDurationNull: String,
+        val matchGuiStatusWon: String,
+        val matchGuiStatusLost: String,
+        val matchGuiStatusAborted: String,
+        val matchGuiItemName: String,
+        val matchGuiItemLore: List<String>,
+        val matchGuiItemTypeWon: String,
+        val matchGuiItemTypeLost: String,
+        val matchGuiItemTypeOnGoing: String,
+        val matchGuiItemTypeAborted: String,
+
+        val teamGuiTitle: String,
+        val teamGuiBackItemSlot: Int,
+        val teamGuiBedDestructionNull: String,
+        val teamGuiEliminationNull: String,
+        val teamGuiFinalPlacementNull: String,
+        val teamGuiItemName: String,
+        val teamGuiItemGlow: Boolean,
+        val teamGuiItemLore: List<String>,
+
+        val playerGuiTitle: String,
+        val playerGuiBackItemSlot: Int,
+        val playerGuiStatusWin: String,
+        val playerGuiStatusLose: String,
+        val playerGuiOwnItem: String,
+        val playerGuiItemName: String,
+        val playerGuiItemLore: List<String>,
 
         val configVersion: Int
     )
@@ -30,6 +63,38 @@ object Config : AbstractConfig("config.yml") {
         databaseName = "matchvault",
         databaseParameters = "?useSSL=false&allowMultiQueries=true",
 
+        matchGuiTitle = "&bMatchList",
+        matchGuiPrevItemSlot = 17,
+        matchGuiNextItemSlot = 44,
+        matchGuiFinishNull = "N/A",
+        matchGuiDurationNull = "N/A",
+        matchGuiStatusWon = "&aWin",
+        matchGuiStatusLost = "&4Lose",
+        matchGuiStatusAborted = "&6Aborted",
+        matchGuiItemName = "&b%arena_name",
+        matchGuiItemLore = listOf(),
+        matchGuiItemTypeWon = "lime_terracotta",
+        matchGuiItemTypeLost = "red_terracotta",
+        matchGuiItemTypeOnGoing = "blue_terracotta",
+        matchGuiItemTypeAborted = "yellow_terracotta",
+
+        teamGuiTitle = "&bTeam List",
+        teamGuiBackItemSlot = 0,
+        teamGuiBedDestructionNull = "Intact",
+        teamGuiEliminationNull = "N/A",
+        teamGuiFinalPlacementNull = "N/A",
+        teamGuiItemName = "%team_color%team_name",
+        teamGuiItemGlow = true,
+        teamGuiItemLore = listOf(),
+
+        playerGuiTitle = "&bTeam List",
+        playerGuiBackItemSlot = 0,
+        playerGuiStatusWin = "&aWinner",
+        playerGuiStatusLose = "&4Loser",
+        playerGuiOwnItem = "&7(YOU)",
+        playerGuiItemName = "%player_name %own",
+        playerGuiItemLore = listOf(),
+
         configVersion =  1
     )
         private set
@@ -45,6 +110,38 @@ object Config : AbstractConfig("config.yml") {
             databasePassword = doc.getString("database.password"),
             databaseName = doc.getString("database.name"),
             databaseParameters = doc.getString("database.parameters"),
+
+            matchGuiTitle = doc.getString("gui.match-list.title"),
+            matchGuiPrevItemSlot = doc.getInt("gui.match-list.previous-item-slot"),
+            matchGuiNextItemSlot = doc.getInt("gui.match-list.next-item-slot"),
+            matchGuiFinishNull = doc.getString("gui.match-list.placeholders.finish.if-null"),
+            matchGuiDurationNull = doc.getString("gui.match-list.placeholders.duration.if-null"),
+            matchGuiStatusWon = doc.getString("gui.match-list.placeholders.status.if-won"),
+            matchGuiStatusLost = doc.getString("gui.match-list.placeholders.status.if-lost"),
+            matchGuiStatusAborted = doc.getString("gui.match-list.placeholders.status.if-aborted"),
+            matchGuiItemName = doc.getString("gui.match-list.match-item.name"),
+            matchGuiItemLore = doc.getStringList("gui.match-list.match-item.lore"),
+            matchGuiItemTypeWon = doc.getString("gui.match-list.match-item.type.won"),
+            matchGuiItemTypeLost = doc.getString("gui.match-list.match-item.type.lost"),
+            matchGuiItemTypeOnGoing = doc.getString("gui.match-list.match-item.type.on-going"),
+            matchGuiItemTypeAborted = doc.getString("gui.match-list.match-item.type.aborted"),
+
+            teamGuiTitle = doc.getString("gui.team-list.title"),
+            teamGuiBackItemSlot = doc.getInt("gui.team-list.back-item-slot"),
+            teamGuiBedDestructionNull = doc.getString("gui.team-list.placeholders.bed-destruction.if-null"),
+            teamGuiEliminationNull = doc.getString("gui.team-list.placeholders.elimination.if-null"),
+            teamGuiFinalPlacementNull = doc.getString("gui.team-list.placeholders.final-placement.if-null"),
+            teamGuiItemName = doc.getString("gui.team-list.match-item.name"),
+            teamGuiItemGlow = doc.getBoolean("gui.team-list.match-item.glow-own"),
+            teamGuiItemLore = doc.getStringList("gui.team-list.match-item.lore"),
+
+            playerGuiTitle = doc.getString("gui.player-list.title"),
+            playerGuiBackItemSlot = doc.getInt("gui.player-list.back-item-slot"),
+            playerGuiStatusWin = doc.getString("gui.player-list.placeholders.status.if-win"),
+            playerGuiStatusLose = doc.getString("gui.player-list.placeholders.status.if-lose"),
+            playerGuiOwnItem = doc.getString("gui.player-list.placeholders.own-item"),
+            playerGuiItemName = doc.getString("gui.player-list.match-item.name"),
+            playerGuiItemLore = doc.getStringList("gui.player-list.match-item.lore"),
 
             configVersion = doc.getInt("config-version")
         )

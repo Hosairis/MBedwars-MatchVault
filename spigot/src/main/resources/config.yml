@@ -9,5 +9,88 @@ database:
   name: "matchvault"
   parameters: "?useSSL=false&allowMultiQueries=true"
 
+gui:
+  match-list:
+    title: "&bMatchList"
+    previous-item-slot: 17
+    next-item-slot: 44
+    placeholders:
+      finish:
+        if-null: "N/A"
+      duration:
+        if-null: "N/A"
+      status:
+        if-won: "&aWin"
+        if-lost: "&4Lose"
+        if-aborted: "&6Aborted"
+    match-item:
+      name: "&b%arena_name"
+      lore:
+        - "&r"
+        - "&7Date:"
+        - "    &f%date"
+        - "&r"
+        - "&7Finished:"
+        - "    &f%finish"
+        - "&r"
+        - "&7Duration:"
+        - "    &f%duration"
+        - "&r"
+        - "&7Status: %status"
+      type:
+        won: "lime_terracotta"
+        lost: "red_terracotta"
+        on-going: "blue_terracotta"
+        aborted: "yellow_terracotta"
+  team-list:
+    title: "&bTeam List"
+    back-item-slot: 0
+    placeholders:
+      bed-destruction:
+        if-null: "N/A"
+      elimination:
+        if-null: "N/A"
+      final-placement:
+        if-null: "N/A"
+    match-item:
+      name: "%team_color%team_name"
+      glow-own: true
+      lore:
+        - "&r"
+        - "&7Bed destruction time:"
+        - "    &f%bed_destruction_time"
+        - "&r"
+        - "&7Elimination time:"
+        - "    &f%elimination_time"
+        - "&r"
+        - "&7Final Placement: %final_placement"
+  player-list:
+    title: "&bPlayer List"
+    back-item-slot: 0
+    placeholders:
+      status:
+        if-win: "&aWinner"
+        if-lose: "&4Loser"
+      own-item: "&7(YOU)"
+    match-item:
+      name: "%team_color%player_name %own"
+      lore:
+        - "&7Kills: &f%kills"
+        - "&7Final Kills: &f%final_kills"
+        - "&7Deaths: &f%deaths"
+        - "&7Beds Destroyed: &f%beds_destroyed"
+        - "&7Total Irons Collected: &f%resource_iron"
+        - "&7Total Golds Collected: &f%resource_gold"
+        - "&7Total Diamonds Collected: &f%resource_diamond"
+        - "&7Total Emerald Collected: &f%resource_emerald"
+        - "&7Spawner Irons Collected: &f%res_iron_spawner"
+        - "&7Spawner Golds Collected: &f%res_gold_spawner"
+        - "&7Spawner Diamonds Collected: &f%res_diamond_spawner"
+        - "&7Spawner Emerald Collected: &f%res_emerald_spawner"
+        - "&7Status: %status"
+
+
+
+
 # DO NOT EDIT!
 config-version: 1

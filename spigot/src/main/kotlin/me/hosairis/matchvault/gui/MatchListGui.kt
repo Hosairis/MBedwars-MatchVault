@@ -5,6 +5,7 @@ import dev.triumphteam.gui.builder.item.ItemBuilder
 import dev.triumphteam.gui.guis.Gui
 import dev.triumphteam.gui.guis.GuiItem
 import dev.triumphteam.gui.guis.ScrollingGui
+import me.hosairis.matchvault.storage.config.Config
 import me.hosairis.matchvault.storage.database.enums.MatchStatus
 import me.hosairis.matchvault.storage.database.model.MatchData
 import me.hosairis.matchvault.storage.database.service.MatchService
@@ -39,45 +40,64 @@ object MatchListGui {
     private fun createGui(): ScrollingGui {
         val gui = Gui
             .scrolling()
-            .title(Component.text(MessageHelper.colorize("MatchList")))
+            .title(Component.text(MessageHelper.colorize(Config.values.matchGuiTitle)))
             .rows(6)
             .disableAllInteractions()
             .create()
 
         gui.filler.fillBorder(CommonGuiItems.fillerItem)
 
-        gui.setItem(17, CommonGuiItems.previousItem(gui))
-        gui.setItem(44, CommonGuiItems.nextItem(gui))
+        gui.setItem(Config.values.matchGuiPrevItemSlot, CommonGuiItems.previousItem(gui))
+        gui.setItem(Config.values.matchGuiNextItemSlot, CommonGuiItems.nextItem(gui))
 
         return gui
     }
 
     fun createMatchItem(matchData: MatchData, won: Boolean, unit: () -> Unit): GuiItem {
         val material = if (matchData.status == MatchStatus.ONGOING) {
-            Helper.get().getMaterialByName("blue_terracotta") ?: Material.ITEM_FRAME
+            Helper.get().getMaterialByName(Config.values.matchGuiItemTypeOnGoing) ?: Material.ITEM_FRAME
         } else if (matchData.status == MatchStatus.ABORTED) {
-            Helper.get().getMaterialByName("yellow_terracotta") ?: Material.ITEM_FRAME
+            Helper.get().getMaterialByName(Config.values.matchGuiItemTypeAborted) ?: Material.ITEM_FRAME
         } else if (won) {
-            Helper.get().getMaterialByName("lime_terracotta") ?: Material.ITEM_FRAME
+            Helper.get().getMaterialByName(Config.values.matchGuiItemTypeWon) ?: Material.ITEM_FRAME
         } else {
-            Helper.get().getMaterialByName("red_terracotta") ?: Material.ITEM_FRAME
+            Helper.get().getMaterialByName(Config.values.matchGuiItemTypeLost) ?: Material.ITEM_FRAME
+        }
+
+        val date = TimeUtil.formatMillis(matchData.startedAt)
+        val finish = if (matchData.endedAt == null) {
+            Config.values.matchGuiFinishNull
+        } else {
+            TimeUtil.formatMillis(matchData.endedAt)
+        }
+        val duration = if (matchData.duration == null) {
+            Config.values.matchGuiDurationNull
+        } else {
+            TimeUtil.formatDuration(matchData.duration)
+        }
+        val status = if (matchData.status == MatchStatus.ABORTED) {
+            Config.values.matchGuiStatusAborted
+        } else if (won) {
+            Config.values.matchGuiStatusWon
+        } else {
+            Config.values.matchGuiStatusLost
         }
 
         val item = ItemBuilder
             .from(material)
-            .name(Component.text(MessageHelper.colorize("&b${matchData.arenaName}")))
+            .name(Component.text(MessageHelper.colorize(Config.values.matchGuiItemName.replace("%arena_name", matchData.arenaName))))
             .lore(
-                Component.text(MessageHelper.colorize("&r")),
-                Component.text(MessageHelper.colorize("&7Date:")),
-                Component.text(MessageHelper.colorize("    &f${TimeUtil.formatMillis(matchData.startedAt)}")),
-                Component.text(MessageHelper.colorize("&r")),
-                Component.text(MessageHelper.colorize("&7Finished:")),
-                Component.text(MessageHelper.colorize("    &f${if (matchData.endedAt == null) "N/A" else TimeUtil.formatMillis(matchData.endedAt)}")),
-                Component.text(MessageHelper.colorize("&r")),
-                Component.text(MessageHelper.colorize("&7Duration:")),
-                Component.text(MessageHelper.colorize("    &f${if (matchData.duration == null) "N/A" else TimeUtil.formatDuration(matchData.duration)}")),
-                Component.text(MessageHelper.colorize("&r")),
-                Component.text(MessageHelper.colorize("&7Status: ${if (matchData.status == MatchStatus.ABORTED) "&6Aborted" else if (won) "&aWin" else "&4Lose"}")),
+                Config.values.matchGuiItemLore.map {
+                    Component.text(
+                        MessageHelper.colorize(
+                            it
+                                .replace("%date", date)
+                                .replace("%finish", finish)
+                                .replace("%duration", duration)
+                                .replace("%status", status)
+                        )
+                    )
+                }
             )
             .build()
 

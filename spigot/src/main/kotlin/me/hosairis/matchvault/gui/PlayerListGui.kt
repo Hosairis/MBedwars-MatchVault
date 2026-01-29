@@ -1,39 +1,36 @@
 package me.hosairis.matchvault.gui
 
-import de.marcely.bedwars.tools.Helper
 import dev.triumphteam.gui.builder.item.ItemBuilder
 import dev.triumphteam.gui.guis.Gui
 import dev.triumphteam.gui.guis.GuiItem
+import me.hosairis.matchvault.storage.config.Config
 import me.hosairis.matchvault.storage.database.model.MatchPlayerData
 import me.hosairis.matchvault.storage.database.model.MatchTeamData
 import me.hosairis.matchvault.storage.database.service.MatchService
 import me.hosairis.matchvault.storage.database.service.PlayerService
 import me.hosairis.matchvault.util.CoroutineHelper
-import me.hosairis.matchvault.util.Log
 import me.hosairis.matchvault.util.MessageHelper
 import net.kyori.adventure.text.Component
 import net.md_5.bungee.api.ChatColor
 import org.bukkit.Bukkit
-import org.bukkit.Material
-import org.bukkit.OfflinePlayer
 import org.bukkit.entity.Player
 
 object PlayerListGui {
 
-    fun open(player: Player, matchId: Long, teamId: Long, target: String? = null) {
+    fun open(player: Player, matchId: Long, teamData: MatchTeamData, target: String? = null) {
         val gui = createGui()
         val name = target ?: player.name
-        gui.setItem(0, CommonGuiItems.backItem { TeamListGui.open(player, matchId, target) })
+        gui.setItem(Config.values.playerGuiBackItemSlot, CommonGuiItems.backItem { TeamListGui.open(player, matchId, target) })
 
         gui.open(player)
 
         CoroutineHelper.runAsync {
-            val matchPlayerList = MatchService.readPlayersOfTeam(teamId)
+            val matchPlayerList = MatchService.readPlayersOfTeam(teamData.id!!)
+            val playerId = PlayerService.readIdByName(name) ?: -1
 
             CoroutineHelper.runSync {
-                val playerId = PlayerService.readIdByName(name) ?: -1
                 for (matchPlayerData in matchPlayerList) {
-                    gui.addItem(createPlayerItem(matchPlayerData, matchPlayerData.playerId == playerId))
+                    gui.addItem(createPlayerItem(matchPlayerData, teamData.team, matchPlayerData.playerId == playerId))
                 }
                 gui.update()
             }
@@ -43,7 +40,7 @@ object PlayerListGui {
     private fun createGui(): Gui {
         val gui = Gui
             .gui()
-            .title(Component.text("Player List"))
+            .title(Component.text(Config.values.playerGuiTitle))
             .rows(6)
             .disableAllInteractions()
             .create()
@@ -53,29 +50,41 @@ object PlayerListGui {
         return gui
     }
 
-    fun createPlayerItem(matchPlayerData: MatchPlayerData, self: Boolean): GuiItem {
+    fun createPlayerItem(matchPlayerData: MatchPlayerData, team: String, self: Boolean): GuiItem {
         val uuid = PlayerService.readUuidById(matchPlayerData.playerId)
         val offlinePlayer = Bukkit.getOfflinePlayer(uuid)
+        val status = if (matchPlayerData.won) Config.values.playerGuiStatusWin else Config.values.playerGuiStatusLose
 
         return ItemBuilder
             .skull()
             .owner(offlinePlayer)
-            .name(Component.text(MessageHelper.colorize("&b${offlinePlayer.name} ${if (self) "&7(YOU)" else ""}")))
+            .name(Component.text(MessageHelper.colorize(
+                Config.values.playerGuiItemName
+                    .replace("%team_color", "${ChatColor.valueOf(team)}")
+                    .replace("%player_name", offlinePlayer.name)
+                    .replace("%own", if (self) Config.values.playerGuiOwnItem else "")
+            )))
             .lore(
-                Component.text(MessageHelper.colorize("&r")),
-                Component.text(MessageHelper.colorize("&7Kills: &f${matchPlayerData.kills}")),
-                Component.text(MessageHelper.colorize("&7Final Kills: &f${matchPlayerData.finalKills}")),
-                Component.text(MessageHelper.colorize("&7Deaths: &f${matchPlayerData.deaths}")),
-                Component.text(MessageHelper.colorize("&7Beds Destroyed: &f${matchPlayerData.bedsDestroyed}")),
-                Component.text(MessageHelper.colorize("&7Total Irons Collected: &f${matchPlayerData.resIron}")),
-                Component.text(MessageHelper.colorize("&7Total Golds Collected: &f${matchPlayerData.resGold}")),
-                Component.text(MessageHelper.colorize("&7Total Diamonds Collected: &f${matchPlayerData.resDiamond}")),
-                Component.text(MessageHelper.colorize("&7Total Emerald Collected: &f${matchPlayerData.resEmerald}")),
-                Component.text(MessageHelper.colorize("&7Spawner Irons Collected: &f${matchPlayerData.resIronSpawner}")),
-                Component.text(MessageHelper.colorize("&7Spawner Golds Collected: &f${matchPlayerData.resGoldSpawner}")),
-                Component.text(MessageHelper.colorize("&7Spawner Diamonds Collected: &f${matchPlayerData.resDiamondSpawner}")),
-                Component.text(MessageHelper.colorize("&7Spawner Emerald Collected: &f${matchPlayerData.resEmeraldSpawner}")),
-                Component.text(MessageHelper.colorize("&7Status: ${if (matchPlayerData.won) "&aWinner" else "&4Loser"}"))
+                Config.values.playerGuiItemLore.map {
+                    Component.text(
+                        MessageHelper.colorize(
+                            it
+                                .replace("%kills", "${matchPlayerData.kills}")
+                                .replace("%final_kills", "${matchPlayerData.finalKills}")
+                                .replace("%deaths", "${matchPlayerData.deaths}")
+                                .replace("%beds_destroyed", "${matchPlayerData.bedsDestroyed}")
+                                .replace("%resource_iron", "${matchPlayerData.resIron}")
+                                .replace("%resource_gold", "${matchPlayerData.resGold}")
+                                .replace("%resource_diamond", "${matchPlayerData.resDiamond}")
+                                .replace("%resource_emerald", "${matchPlayerData.resEmerald}")
+                                .replace("%res_iron_spawner", "${matchPlayerData.resIronSpawner}")
+                                .replace("%res_gold_spawner", "${matchPlayerData.resGoldSpawner}")
+                                .replace("%res_diamond_spawner", "${matchPlayerData.resDiamondSpawner}")
+                                .replace("%res_emerald_spawner", "${matchPlayerData.resEmeraldSpawner}")
+                                .replace("%status", status)
+                        )
+                    )
+                }
             )
             .asGuiItem()
     }
