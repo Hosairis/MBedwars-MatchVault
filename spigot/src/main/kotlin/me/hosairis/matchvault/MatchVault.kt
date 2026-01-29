@@ -2,6 +2,7 @@ package me.hosairis.matchvault
 
 import me.hosairis.matchvault.command.HistoryCMD
 import me.hosairis.matchvault.storage.config.Config
+import me.hosairis.matchvault.storage.config.Messages
 import me.hosairis.matchvault.util.CoroutineHelper
 import me.hosairis.matchvault.storage.database.Db
 import me.hosairis.matchvault.storage.database.service.MatchService
@@ -29,6 +30,7 @@ class MatchVault: ZapperJavaPlugin() {
         addon = MatchVaultAddon(this).registerAddon()
 
         Config.init(addon.dataFolder)
+        Messages.init(addon.dataFolder)
         Db.init()
 
         // 4) register listeners/commands
