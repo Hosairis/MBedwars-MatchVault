@@ -76,16 +76,34 @@ bukkitPluginYaml {
     authors.add("Hosairis")
     apiVersion = "1.13"
     depend.add("MBedwars")
+
     commands {
         create("matchvault") {
             description = "Main command for MatchVault"
             usage = "/matchvault <subcommand>"
             aliases.addAll(listOf("mvault", "matchv", "mva", "mava"))
         }
+
+        create("matchhistory") {
+            description = "Command for viewing bedwars match history"
+            usage = "/matchhistory [player]"
+            permission = "mva.commands.history"
+            permissionMessage = "%prefix &7You lack the required permission: &cmva.commands.history"
+        }
     }
+
     permissions {
         create("mva.commands.reload") {
             default = Permission.Default.OP
+        }
+
+        create("mva.commands.history") {
+            default = Permission.Default.OP
+        }
+
+        create("mva.commands.history.others") {
+            default = Permission.Default.OP
+            children.set(mapOf("mva.commands.history" to true))
         }
     }
 }

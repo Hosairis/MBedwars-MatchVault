@@ -8,6 +8,8 @@ object Messages : AbstractConfig("messages.yml") {
     data class Values(
         val prefix: String,
 
+        val noRecordedMatches: String,
+        val noRecordedMatchesOthers: String,
         val reloadSuccess: String,
         val reloadFailed: String,
         val insufficientPermissions: String,
@@ -20,6 +22,8 @@ object Messages : AbstractConfig("messages.yml") {
     var values: Values = Values(
         prefix = "&7[&bMatchVault&7]&r",
 
+        noRecordedMatches = "%prefix &7You &4Don't &7have any recorded matches.",
+        noRecordedMatchesOthers = "%prefix &7Player &4%player &7Doesn't have any recorded matches.",
         reloadSuccess = "%prefix &a✔ &7Reload &aSuccessful",
         reloadFailed = "%prefix &c✖ &7Reload &cFailed",
         insufficientPermissions = "%prefix &c✖ &7You lack the required permission: &c%permission",
@@ -33,6 +37,8 @@ object Messages : AbstractConfig("messages.yml") {
         values = Values(
             prefix = doc.getString("prefix"),
 
+            noRecordedMatches = setPlaceHolders(doc.getString("no-recorded-matches")),
+            noRecordedMatchesOthers = setPlaceHolders(doc.getString("no-recorded-matches-others")),
             reloadSuccess = setPlaceHolders(doc.getString("reload-success")),
             reloadFailed = setPlaceHolders(doc.getString("reload-failed")),
             insufficientPermissions = setPlaceHolders(doc.getString("insufficient-permissions")),

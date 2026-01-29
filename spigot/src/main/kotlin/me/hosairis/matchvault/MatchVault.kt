@@ -1,5 +1,6 @@
 package me.hosairis.matchvault
 
+import me.hosairis.matchvault.command.MatchHistoryCMD
 import me.hosairis.matchvault.command.MatchVaultCMD
 import me.hosairis.matchvault.storage.config.Config
 import me.hosairis.matchvault.storage.config.Messages
@@ -61,6 +62,6 @@ class MatchVault: ZapperJavaPlugin() {
 
         // command wiring
         getCommand("matchvault").executor = MatchVaultCMD()
-//        getCommand("matchhistory").executor = HistoryCMD()
+        getCommand("matchhistory").executor = MatchHistoryCMD()
     }
 }

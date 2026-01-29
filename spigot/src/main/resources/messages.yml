@@ -1,5 +1,7 @@
 prefix: "&7[&bMatchVault&7]&r"
 
+no-recorded-matches: "%prefix &7You &4do not &7have any recorded matches."
+no-recorded-matches-others: "%prefix &7Player &4%player &7does not have any recorded matches."
 reload-success: "%prefix &a✔ &7Reload &aSuccessful"
 reload-failed: "%prefix &c✖ &7Reload &cFailed"
 insufficient-permissions: "%prefix &c✖ &7You lack the required permission: &c%permission"
