@@ -33,9 +33,12 @@ object CommonGuiItems {
             .glow()
             .asGuiItem { _ -> gui.next() }
 
-    fun backItem(unit: () -> Unit): GuiItem = ItemBuilder
+    fun backItem(action: () -> Unit): GuiItem = ItemBuilder
         .from(Material.BARRIER)
         .name(Component.text(MessageHelper.colorize("&4Back")))
         .flags(*ItemFlag.entries.toTypedArray())
-        .asGuiItem { _ -> unit }
+        .asGuiItem { e ->
+            e.isCancelled = true
+            action()
+        }
 }
