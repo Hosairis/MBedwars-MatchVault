@@ -2,6 +2,7 @@ package me.hosairis.matchvault.tracking.match
 
 import de.marcely.bedwars.api.event.arena.RoundEndEvent
 import de.marcely.bedwars.api.event.arena.RoundStartEvent
+import me.hosairis.matchvault.storage.database.cache.MatchHistoryCache
 import me.hosairis.matchvault.util.CoroutineHelper
 import me.hosairis.matchvault.util.Log
 import me.hosairis.matchvault.storage.database.service.MatchService
@@ -34,6 +35,8 @@ class MatchRoundListener: Listener {
                 ex.printStackTrace()
             }
         }
+
+        arena.players.forEach { MatchHistoryCache.removeMatchList(it.name) }
     }
 
     @EventHandler
@@ -58,5 +61,8 @@ class MatchRoundListener: Listener {
                 ex.printStackTrace()
             }
         }
+
+        event.losers.forEach { MatchHistoryCache.removeMatchList(it.name) }
+        event.winners.forEach { MatchHistoryCache.removeMatchList(it.name) }
     }
 }
