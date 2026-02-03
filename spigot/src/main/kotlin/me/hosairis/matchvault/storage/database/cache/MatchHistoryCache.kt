@@ -73,4 +73,21 @@ internal object MatchHistoryCache {
 
     fun getTeamIdInMatch(playerName: String, matchId: Long): Long? =
         playerToTeamInMatch.getIfPresent("$playerName|$matchId")
+
+    // ---------- Removals ---------- //
+
+    fun removeMatchList(playerName: String) =
+        nameToMatchList.invalidate(playerName)
+
+    fun removeTeamList(matchId: Long) =
+        matchToTeamList.invalidate(matchId)
+
+    fun removePlayerList(teamId: Long) =
+        teamToPlayerList.invalidate(teamId)
+
+    fun removePlayerUuid(id: Long) =
+        playerIdToUuid.invalidate(id)
+
+    fun removeTeamIdInMatch(playerName: String, matchId: Long) =
+        playerToTeamInMatch.invalidate("$playerName|$matchId")
 }
