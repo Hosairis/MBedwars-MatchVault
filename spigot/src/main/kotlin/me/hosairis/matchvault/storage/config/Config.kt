@@ -1,11 +1,16 @@
 package me.hosairis.matchvault.storage.config
 
+import de.marcely.bedwars.tools.Helper
 import dev.dejvokep.boostedyaml.YamlDocument
+import org.bukkit.Material
 import kotlin.String
 
 object Config : AbstractConfig("config.yml") {
 
     data class Values(
+        val allowedMaterials: List<Material>,
+        val allowedStats: List<String>,
+
         val serverName: String,
 
         val databaseType: String,
@@ -53,6 +58,21 @@ object Config : AbstractConfig("config.yml") {
 
     @Volatile
     var values: Values = Values(
+        allowedMaterials = listOf(
+            Helper.get().getMaterialByName("iron_ingot") ?: Material.IRON_INGOT,
+            Helper.get().getMaterialByName("gold_ingot") ?: Material.GOLD_INGOT,
+            Helper.get().getMaterialByName("diamond") ?: Material.DIAMOND,
+            Helper.get().getMaterialByName("emerald") ?: Material.EMERALD
+        ),
+        allowedStats = listOf(
+            "bedwars:kills",
+            "bedwars:final_kills",
+            "bedwars:deaths",
+            "bedwars:beds_destroyed",
+            "bedwars:top_kill_streak",  //TODO
+            "bedwars:play_time"         //TODO
+        ),
+
         serverName = "unknown",
 
         databaseType = "H2",
@@ -101,6 +121,21 @@ object Config : AbstractConfig("config.yml") {
 
     override fun loadValues(doc: YamlDocument) {
         values = Values(
+            allowedMaterials = listOf(
+                Helper.get().getMaterialByName("iron_ingot") ?: Material.IRON_INGOT,
+                Helper.get().getMaterialByName("gold_ingot") ?: Material.GOLD_INGOT,
+                Helper.get().getMaterialByName("diamond") ?: Material.DIAMOND,
+                Helper.get().getMaterialByName("emerald") ?: Material.EMERALD
+            ),
+            allowedStats = listOf(
+                "bedwars:kills",
+                "bedwars:final_kills",
+                "bedwars:deaths",
+                "bedwars:beds_destroyed",
+                "bedwars:top_kill_streak",  //TODO
+                "bedwars:play_time"         //TODO
+            ),
+
             serverName = doc.getString("server-name"),
 
             databaseType = doc.getString("database.type"),
