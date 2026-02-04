@@ -10,6 +10,7 @@ import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.plus
 import org.jetbrains.exposed.v1.jdbc.Query
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insertAndGetId
@@ -63,6 +64,39 @@ class MatchPlayerRepository {
             it[resEmeraldSpawner] = data.resEmeraldSpawner
 
             it[won] = data.won
+        } > 0
+    }
+
+    fun updatePartial(
+        id: Long,
+        kills: Int? = null,
+        finalKills: Int? = null,
+        deaths: Int? = null,
+        bedsDestroyed: Int? = null,
+        resIron: Long? = null,
+        resGold: Long? = null,
+        resDiamond: Long? = null,
+        resEmerald: Long? = null,
+        resIronSpawner: Long? = null,
+        resGoldSpawner: Long? = null,
+        resDiamondSpawner: Long? = null,
+        resEmeraldSpawner: Long? = null,
+        won: Boolean? = null
+    ): Boolean {
+        return MatchPlayers.update({ MatchPlayers.id eq id }) {
+            if (kills != null) it[MatchPlayers.kills] = MatchPlayers.kills + kills
+            if (finalKills != null) it[MatchPlayers.finalKills] = MatchPlayers.finalKills + finalKills
+            if (deaths != null) it[MatchPlayers.deaths] = MatchPlayers.deaths + deaths
+            if (bedsDestroyed != null) it[MatchPlayers.bedsDestroyed] = MatchPlayers.bedsDestroyed + bedsDestroyed
+            if (resIron != null && resIron != 0L) it[MatchPlayers.resIron] = MatchPlayers.resIron + resIron
+            if (resGold != null && resGold != 0L) it[MatchPlayers.resGold] = MatchPlayers.resGold + resGold
+            if (resDiamond != null && resDiamond != 0L) it[MatchPlayers.resDiamond] = MatchPlayers.resDiamond + resDiamond
+            if (resEmerald != null && resEmerald != 0L) it[MatchPlayers.resEmerald] = MatchPlayers.resEmerald + resEmerald
+            if (resIronSpawner != null && resIronSpawner != 0L) it[MatchPlayers.resIronSpawner] = MatchPlayers.resIronSpawner + resIronSpawner
+            if (resGoldSpawner != null && resGoldSpawner != 0L) it[MatchPlayers.resGoldSpawner] = MatchPlayers.resGoldSpawner + resGoldSpawner
+            if (resDiamondSpawner != null && resDiamondSpawner != 0L) it[MatchPlayers.resDiamondSpawner] = MatchPlayers.resDiamondSpawner + resDiamondSpawner
+            if (resEmeraldSpawner != null && resEmeraldSpawner != 0L) it[MatchPlayers.resEmeraldSpawner] = MatchPlayers.resEmeraldSpawner + resEmeraldSpawner
+            if (won != null) it[MatchPlayers.won] = won
         } > 0
     }
 

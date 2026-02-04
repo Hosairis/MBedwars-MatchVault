@@ -2,7 +2,7 @@ package me.hosairis.matchvault.storage.database.service
 
 import de.marcely.bedwars.api.arena.Arena
 import de.marcely.bedwars.api.arena.Team
-import de.marcely.bedwars.tools.Helper
+import me.hosairis.matchvault.storage.config.Config
 import me.hosairis.matchvault.storage.database.cache.MatchCache
 import me.hosairis.matchvault.storage.database.cache.MatchHistoryCache
 import me.hosairis.matchvault.storage.database.enums.MatchStatus
@@ -13,6 +13,7 @@ import me.hosairis.matchvault.storage.database.repo.MatchPlayerRepository
 import me.hosairis.matchvault.storage.database.repo.MatchRepository
 import me.hosairis.matchvault.storage.database.repo.MatchTeamRepository
 import me.hosairis.matchvault.storage.database.repo.PlayerRepository
+import me.hosairis.matchvault.util.Log
 import org.bukkit.Material
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import java.util.UUID
@@ -186,10 +187,10 @@ object MatchService {
         val mp = matchPlayerRepo.readByMatchIdAndPlayerId(matchData.id!!, playerId) ?: return@transaction false
 
         when (statKey) {
-            "bedwars:kills" -> matchPlayerRepo.update(mp.copy(kills = newValue))
-            "bedwars:final_kills" -> matchPlayerRepo.update(mp.copy(finalKills = newValue))
-            "bedwars:deaths" -> matchPlayerRepo.update(mp.copy(deaths = newValue))
-            "bedwars:beds_destroyed" -> matchPlayerRepo.update(mp.copy(bedsDestroyed = newValue))
+            "bedwars:kills" -> matchPlayerRepo.updatePartial(id = mp.id!!, kills = newValue)
+            "bedwars:final_kills" -> matchPlayerRepo.updatePartial(id = mp.id!!, finalKills = newValue)
+            "bedwars:deaths" -> matchPlayerRepo.updatePartial(id = mp.id!!, deaths = newValue)
+            "bedwars:beds_destroyed" -> matchPlayerRepo.updatePartial(id = mp.id!!, bedsDestroyed = newValue)
             else -> return@transaction false
         }
     }
@@ -198,7 +199,7 @@ object MatchService {
         arena: Arena,
         playerUuid: UUID,
         material: Material,
-        amount: Int,
+        amount: Long,
         fromSpawner: Boolean
     ): Boolean = transaction {
 
@@ -211,39 +212,44 @@ object MatchService {
             playerId = playerId,
             forUpdate = true
         ) ?: return@transaction false
+        val spawnerAmount = if (fromSpawner) amount else 0
 
         when (material) {
-            Helper.get().getMaterialByName("iron_ingot") -> {
-                val spawnerAmount = if (fromSpawner) matchPlayerData.resIronSpawner + amount else matchPlayerData.resIronSpawner
+            Config.values.allowedMaterials[0] -> {
+                Log.info("update resource iron(x$amount)")
 
-                matchPlayerRepo.update(matchPlayerData.copy(
-                    resIron = matchPlayerData.resIron + amount,
+                matchPlayerRepo.updatePartial(
+                    id = matchPlayerData.id!!,
+                    resIron = amount,
                     resIronSpawner = spawnerAmount
-                ))
+                )
             }
-            Helper.get().getMaterialByName("gold_ingot") -> {
-                val spawnerAmount = if (fromSpawner) matchPlayerData.resGoldSpawner + amount else matchPlayerData.resGoldSpawner
+            Config.values.allowedMaterials[1] -> {
+                Log.info("update resource gold(x$amount)")
 
-                matchPlayerRepo.update(matchPlayerData.copy(
-                    resGold = matchPlayerData.resGold + amount,
+                matchPlayerRepo.updatePartial(
+                    id = matchPlayerData.id!!,
+                    resGold = amount,
                     resGoldSpawner = spawnerAmount
-                ))
+                )
             }
-            Helper.get().getMaterialByName("diamond") -> {
-                val spawnerAmount = if (fromSpawner) matchPlayerData.resDiamondSpawner + amount else matchPlayerData.resDiamondSpawner
+            Config.values.allowedMaterials[2] -> {
+                Log.info("update resource diamond(x$amount)")
 
-                matchPlayerRepo.update(matchPlayerData.copy(
-                    resDiamond = matchPlayerData.resDiamond + amount,
+                matchPlayerRepo.updatePartial(
+                    id = matchPlayerData.id!!,
+                    resDiamond = amount,
                     resDiamondSpawner = spawnerAmount
-                ))
+                )
             }
-            Helper.get().getMaterialByName("emerald") -> {
-                val spawnerAmount = if (fromSpawner) matchPlayerData.resEmeraldSpawner + amount else matchPlayerData.resEmeraldSpawner
+            Config.values.allowedMaterials[3] -> {
+                Log.info("update resource emerald(x$amount)")
 
-                matchPlayerRepo.update(matchPlayerData.copy(
-                    resEmerald = matchPlayerData.resEmerald + amount,
+                matchPlayerRepo.updatePartial(
+                    id = matchPlayerData.id!!,
+                    resEmerald = amount,
                     resEmeraldSpawner = spawnerAmount
-                ))
+                )
             }
             else -> false
         }
