@@ -107,18 +107,9 @@ class PlayerStatsListener : Listener {
                             emerald += item.amount
                         }
                     }
-                    Log.info("(sync) iron: $iron | gold: $gold | diamond: $diamond | emerald: $emerald")
-
-//                    val itemsSnapshot: Map<Material, Long> =
-//                        droppedItems.fold(mutableMapOf<Material, Long>()) { acc, item ->
-//                            val amt = item.amount
-//                            if (amt > 0) acc[item.type] = (acc[item.type] ?: 0L) + amt.toLong()
-//                            acc
-//                        }.toMap()
 
                     CoroutineHelper.runAsync {
                         try {
-                            Log.info("(Async) iron: $iron | gold: $gold | diamond: $diamond | emerald: $emerald")
                             MatchService.updateResourcePickup(
                                 arena = arena,
                                 playerUuid = uuid,
@@ -147,17 +138,6 @@ class PlayerStatsListener : Listener {
                                 amount = emerald.toLong(),
                                 fromSpawner = false
                             )
-
-//                            Log.info("snapshot async = $itemsSnapshot") // add this once to prove it
-//                            for ((material, amount) in itemsSnapshot) {
-//                                MatchService.updateResourcePickup(
-//                                    arena = arena,
-//                                    playerUuid = uuid,
-//                                    material = material,
-//                                    amount = amount,
-//                                    fromSpawner = false
-//                                )
-//                            }
                         } catch (ex: Throwable) {
                             Log.severe("DropEvent async error uuid=$uuid arenaId=${arena.name}: ${ex.message}")
                             ex.printStackTrace()
