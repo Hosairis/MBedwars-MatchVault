@@ -139,7 +139,7 @@ class PlayerStatsListener : Listener {
                                 fromSpawner = false
                             )
                         } catch (ex: Throwable) {
-                            Log.severe("DropEvent async error uuid=$uuid arenaId=${arena.name}: ${ex.message}")
+                            Log.severe("PlayerDeathInventoryDropEvent: error for uuid=$uuid arenaId=${arena.name}: ${ex.message}")
                             ex.printStackTrace()
                         }
                     }
