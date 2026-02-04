@@ -45,7 +45,7 @@ object PlayerListGui {
             .disableAllInteractions()
             .create()
 
-        gui.filler.fillBorder(CommonGuiItems.fillerItem)
+        gui.filler.fillBorder(CommonGuiItems.borderItem)
 
         return gui
     }

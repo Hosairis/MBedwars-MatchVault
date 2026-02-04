@@ -10,10 +10,22 @@ database:
   parameters: "?useSSL=false&allowMultiQueries=true"
 
 gui:
+  global:
+    border-item:
+      type: "black_stained_glass_pane"
+    back-item:
+      type: "barrier"
+      title: "&4Back"
   match-list:
     title: "&bMatchList"
-    previous-item-slot: 17
-    next-item-slot: 44
+    previous-item:
+      type: "arrow"
+      title: "&4Previous"
+      slot: 17
+    next-item:
+      type: "arrow"
+      title: "&aNext"
+      slot: 44
     placeholders:
       finish:
         if-null: "N/A"

@@ -45,7 +45,7 @@ object MatchListGui {
             .disableAllInteractions()
             .create()
 
-        gui.filler.fillBorder(CommonGuiItems.fillerItem)
+        gui.filler.fillBorder(CommonGuiItems.borderItem)
 
         gui.setItem(Config.values.matchGuiPrevItemSlot, CommonGuiItems.previousItem(gui))
         gui.setItem(Config.values.matchGuiNextItemSlot, CommonGuiItems.nextItem(gui))
