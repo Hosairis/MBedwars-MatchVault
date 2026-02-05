@@ -110,34 +110,38 @@ class PlayerStatsListener : Listener {
 
                     CoroutineHelper.runAsync {
                         try {
-                            MatchService.updateResourcePickup(
-                                arena = arena,
-                                playerUuid = uuid,
-                                material = Config.values.allowedMaterials[0],
-                                amount = iron.toLong(),
-                                fromSpawner = false
-                            )
-                            MatchService.updateResourcePickup(
-                                arena = arena,
-                                playerUuid = uuid,
-                                material = Config.values.allowedMaterials[1],
-                                amount = gold.toLong(),
-                                fromSpawner = false
-                            )
-                            MatchService.updateResourcePickup(
-                                arena = arena,
-                                playerUuid = uuid,
-                                material = Config.values.allowedMaterials[2],
-                                amount = diamond.toLong(),
-                                fromSpawner = false
-                            )
-                            MatchService.updateResourcePickup(
-                                arena = arena,
-                                playerUuid = uuid,
-                                material = Config.values.allowedMaterials[3],
-                                amount = emerald.toLong(),
-                                fromSpawner = false
-                            )
+                            if (iron > 0)
+                                MatchService.updateResourcePickup(
+                                    arena = arena,
+                                    playerUuid = uuid,
+                                    material = Config.values.allowedMaterials[0],
+                                    amount = iron.toLong(),
+                                    fromSpawner = false
+                                )
+                            if (gold > 0)
+                                MatchService.updateResourcePickup(
+                                    arena = arena,
+                                    playerUuid = uuid,
+                                    material = Config.values.allowedMaterials[1],
+                                    amount = gold.toLong(),
+                                    fromSpawner = false
+                                )
+                            if (diamond > 0)
+                                MatchService.updateResourcePickup(
+                                    arena = arena,
+                                    playerUuid = uuid,
+                                    material = Config.values.allowedMaterials[2],
+                                    amount = diamond.toLong(),
+                                    fromSpawner = false
+                                )
+                            if (emerald > 0)
+                                MatchService.updateResourcePickup(
+                                    arena = arena,
+                                    playerUuid = uuid,
+                                    material = Config.values.allowedMaterials[3],
+                                    amount = emerald.toLong(),
+                                    fromSpawner = false
+                                )
                         } catch (ex: Throwable) {
                             Log.severe("PlayerDeathInventoryDropEvent: error for uuid=$uuid arenaId=${arena.name}: ${ex.message}")
                             ex.printStackTrace()
