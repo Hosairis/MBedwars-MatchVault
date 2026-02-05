@@ -184,13 +184,15 @@ object MatchService {
             matchRepo.read(id)
         } ?: return@transaction false
         val playerId = playerRepo.readByUuid(playerUuid)?.id ?: return@transaction false
-        val mp = matchPlayerRepo.readByMatchIdAndPlayerId(matchData.id!!, playerId) ?: return@transaction false
+        val matchPlayerData = matchPlayerRepo.readByMatchIdAndPlayerId(matchData.id!!, playerId) ?: return@transaction false
 
         when (statKey) {
-            "bedwars:kills" -> matchPlayerRepo.updatePartial(id = mp.id!!, kills = newValue)
-            "bedwars:final_kills" -> matchPlayerRepo.updatePartial(id = mp.id!!, finalKills = newValue)
-            "bedwars:deaths" -> matchPlayerRepo.updatePartial(id = mp.id!!, deaths = newValue)
-            "bedwars:beds_destroyed" -> matchPlayerRepo.updatePartial(id = mp.id!!, bedsDestroyed = newValue)
+            "bedwars:kills" -> matchPlayerRepo.updatePartial(id = matchPlayerData.id!!, kills = newValue)
+            "bedwars:final_kills" -> matchPlayerRepo.updatePartial(id = matchPlayerData.id!!, finalKills = newValue)
+            "bedwars:deaths" -> matchPlayerRepo.updatePartial(id = matchPlayerData.id!!, deaths = newValue)
+            "bedwars:beds_destroyed" -> matchPlayerRepo.updatePartial(id = matchPlayerData.id!!, bedsDestroyed = newValue)
+            "bedwars:top_kill_streak" -> matchPlayerRepo.updatePartial(id = matchPlayerData.id!!, topKillStreak = newValue)
+            "bedwars:play_time" -> matchPlayerRepo.updatePartial(id = matchPlayerData.id!!, playTime = newValue.toLong())
             else -> return@transaction false
         }
     }
@@ -216,8 +218,6 @@ object MatchService {
 
         when (material) {
             Config.values.allowedMaterials[0] -> {
-                Log.info("update resource iron(x$amount)")
-
                 matchPlayerRepo.updatePartial(
                     id = matchPlayerData.id!!,
                     resIron = amount,
@@ -225,8 +225,6 @@ object MatchService {
                 )
             }
             Config.values.allowedMaterials[1] -> {
-                Log.info("update resource gold(x$amount)")
-
                 matchPlayerRepo.updatePartial(
                     id = matchPlayerData.id!!,
                     resGold = amount,
@@ -234,8 +232,6 @@ object MatchService {
                 )
             }
             Config.values.allowedMaterials[2] -> {
-                Log.info("update resource diamond(x$amount)")
-
                 matchPlayerRepo.updatePartial(
                     id = matchPlayerData.id!!,
                     resDiamond = amount,
@@ -243,8 +239,6 @@ object MatchService {
                 )
             }
             Config.values.allowedMaterials[3] -> {
-                Log.info("update resource emerald(x$amount)")
-
                 matchPlayerRepo.updatePartial(
                     id = matchPlayerData.id!!,
                     resEmerald = amount,

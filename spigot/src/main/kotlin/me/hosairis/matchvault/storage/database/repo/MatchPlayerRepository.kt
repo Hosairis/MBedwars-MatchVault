@@ -29,6 +29,8 @@ class MatchPlayerRepository {
             it[finalKills] = data.finalKills
             it[deaths] = data.deaths
             it[bedsDestroyed] = data.bedsDestroyed
+            it[topKillStreak] = data.topKillStreak
+            it[playTime] = data.playTime
 
             it[resIron] = data.resIron
             it[resGold] = data.resGold
@@ -52,6 +54,8 @@ class MatchPlayerRepository {
             it[finalKills] = data.finalKills
             it[deaths] = data.deaths
             it[bedsDestroyed] = data.bedsDestroyed
+            it[topKillStreak] = data.topKillStreak
+            it[playTime] = data.playTime
 
             it[resIron] = data.resIron
             it[resGold] = data.resGold
@@ -73,6 +77,8 @@ class MatchPlayerRepository {
         finalKills: Int? = null,
         deaths: Int? = null,
         bedsDestroyed: Int? = null,
+        topKillStreak: Int? = null,
+        playTime: Long? = null,
         resIron: Long? = null,
         resGold: Long? = null,
         resDiamond: Long? = null,
@@ -84,10 +90,12 @@ class MatchPlayerRepository {
         won: Boolean? = null
     ): Boolean {
         return MatchPlayers.update({ MatchPlayers.id eq id }) {
-            if (kills != null) it[MatchPlayers.kills] = MatchPlayers.kills + kills
-            if (finalKills != null) it[MatchPlayers.finalKills] = MatchPlayers.finalKills + finalKills
-            if (deaths != null) it[MatchPlayers.deaths] = MatchPlayers.deaths + deaths
-            if (bedsDestroyed != null) it[MatchPlayers.bedsDestroyed] = MatchPlayers.bedsDestroyed + bedsDestroyed
+            if (kills != null) it[MatchPlayers.kills] = kills
+            if (finalKills != null) it[MatchPlayers.finalKills] = finalKills
+            if (deaths != null) it[MatchPlayers.deaths] = deaths
+            if (bedsDestroyed != null) it[MatchPlayers.bedsDestroyed] = bedsDestroyed
+            if (topKillStreak != null) it[MatchPlayers.topKillStreak] = topKillStreak
+            if (playTime != null) it[MatchPlayers.playTime] = playTime
             if (resIron != null && resIron != 0L) it[MatchPlayers.resIron] = MatchPlayers.resIron + resIron
             if (resGold != null && resGold != 0L) it[MatchPlayers.resGold] = MatchPlayers.resGold + resGold
             if (resDiamond != null && resDiamond != 0L) it[MatchPlayers.resDiamond] = MatchPlayers.resDiamond + resDiamond
@@ -162,6 +170,8 @@ class MatchPlayerRepository {
             finalKills = this[MatchPlayers.finalKills],
             deaths = this[MatchPlayers.deaths],
             bedsDestroyed = this[MatchPlayers.bedsDestroyed],
+            topKillStreak = this[MatchPlayers.topKillStreak],
+            playTime = this[MatchPlayers.playTime],
 
             resIron = this[MatchPlayers.resIron],
             resGold = this[MatchPlayers.resGold],

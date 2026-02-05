@@ -9,6 +9,8 @@ data class MatchPlayerData(
     val finalKills: Int = 0,
     val deaths: Int = 0,
     val bedsDestroyed: Int = 0,
+    val topKillStreak: Int = 0,
+    val playTime: Long = 0,
     val resIron: Long = 0,
     val resGold: Long = 0,
     val resDiamond: Long = 0,
