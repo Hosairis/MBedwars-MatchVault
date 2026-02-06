@@ -12,7 +12,6 @@ import org.bukkit.inventory.ItemFlag
 
 object CommonGuiItems {
 
-    //TODO: Make configurable
     val borderItem = ItemBuilder
         .from(Helper.get().getMaterialByName(Config.values.guiBorderItemType) ?: Material.GLASS)
         .name(Component.text(""))
