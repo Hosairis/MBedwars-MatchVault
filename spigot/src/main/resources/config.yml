@@ -95,10 +95,10 @@ gui:
         - "&7Total Golds Collected: &f%resource_gold"
         - "&7Total Diamonds Collected: &f%resource_diamond"
         - "&7Total Emerald Collected: &f%resource_emerald"
-        - "&7Spawner Irons Collected: &f%res_iron_spawner"
-        - "&7Spawner Golds Collected: &f%res_gold_spawner"
-        - "&7Spawner Diamonds Collected: &f%res_diamond_spawner"
-        - "&7Spawner Emerald Collected: &f%res_emerald_spawner"
+        - "&7Spawner Irons Collected: &f%resource_iron_spawner"
+        - "&7Spawner Golds Collected: &f%resource_gold_spawner"
+        - "&7Spawner Diamonds Collected: &f%resource_diamond_spawner"
+        - "&7Spawner Emerald Collected: &f%resource_emerald_spawner"
         - "&7Status: %status"
 
 
