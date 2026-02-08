@@ -23,6 +23,7 @@ object MessageHelper {
         "DARK_GRAY" to "&8",
         "BROWN" to "&4",
         "BLACK" to "&0",
+        "MAGENTA" to "&d",
     )
 
     fun getColorCode(colorName: String): String {
