@@ -13,6 +13,7 @@ import me.hosairis.matchvault.storage.database.service.MatchService
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.inventory.ItemStack
 import org.bukkit.plugin.Plugin
@@ -20,11 +21,11 @@ import java.util.concurrent.atomic.AtomicInteger
 
 class PlayerStatsListener : Listener {
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR)
     private fun onStatsChange(event: PlayerStatChangeEvent) {
         if (event.isFromRemoteServer) return
+        if (event.newValue.equals(event.oldValue)) return
         if (!event.stats.isGameStats) return
-        Log.info("stat key: ${event.key} | ${event.newValue.toInt()}")
         if (event.key !in Config.values.allowedStats) return
 
         val player = Bukkit.getPlayer(event.stats.playerUUID) ?: return
