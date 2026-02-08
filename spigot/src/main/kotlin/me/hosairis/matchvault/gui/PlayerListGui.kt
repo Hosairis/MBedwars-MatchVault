@@ -71,6 +71,7 @@ object PlayerListGui {
                             it
                                 .replace("%kills", "${matchPlayerData.kills}")
                                 .replace("%final_kills", "${matchPlayerData.finalKills}")
+                                .replace("%top_kill_streak", "${matchPlayerData.topKillStreak}")
                                 .replace("%deaths", "${matchPlayerData.deaths}")
                                 .replace("%beds_destroyed", "${matchPlayerData.bedsDestroyed}")
                                 .replace("%resource_iron_spawner", "${matchPlayerData.resIronSpawner}")
@@ -81,6 +82,7 @@ object PlayerListGui {
                                 .replace("%resource_gold", "${matchPlayerData.resGold}")
                                 .replace("%resource_diamond", "${matchPlayerData.resDiamond}")
                                 .replace("%resource_emerald", "${matchPlayerData.resEmerald}")
+                                .replace("%play_time", "${matchPlayerData.playTime}")
                                 .replace("%status", status)
                         )
                     )

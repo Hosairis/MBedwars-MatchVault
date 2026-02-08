@@ -89,6 +89,7 @@ gui:
       lore:
         - "&7Kills: &f%kills"
         - "&7Final Kills: &f%final_kills"
+        - "&7Top Kill Streak: %top_kill_streak"
         - "&7Deaths: &f%deaths"
         - "&7Beds Destroyed: &f%beds_destroyed"
         - "&7Total Irons Collected: &f%resource_iron"
@@ -99,6 +100,7 @@ gui:
         - "&7Spawner Golds Collected: &f%resource_gold_spawner"
         - "&7Spawner Diamonds Collected: &f%resource_diamond_spawner"
         - "&7Spawner Emerald Collected: &f%resource_emerald_spawner"
+        - "&7Total Time Played: &f%play_time"
         - "&7Status: %status"
 
 

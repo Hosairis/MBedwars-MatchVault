@@ -27,9 +27,9 @@ class MatchPlayerRepository {
 
             it[kills] = data.kills
             it[finalKills] = data.finalKills
+            it[topKillStreak] = data.topKillStreak
             it[deaths] = data.deaths
             it[bedsDestroyed] = data.bedsDestroyed
-            it[topKillStreak] = data.topKillStreak
             it[playTime] = data.playTime
 
             it[resIron] = data.resIron
