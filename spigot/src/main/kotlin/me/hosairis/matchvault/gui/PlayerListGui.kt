@@ -10,8 +10,8 @@ import me.hosairis.matchvault.storage.database.service.MatchService
 import me.hosairis.matchvault.storage.database.service.PlayerService
 import me.hosairis.matchvault.util.CoroutineHelper
 import me.hosairis.matchvault.util.MessageHelper
+import me.hosairis.matchvault.util.TimeUtil
 import net.kyori.adventure.text.Component
-import net.md_5.bungee.api.ChatColor
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 
@@ -60,7 +60,7 @@ object PlayerListGui {
             .owner(offlinePlayer)
             .name(Component.text(MessageHelper.colorize(
                 Config.values.playerGuiItemName
-                    .replace("%team_color", "${ChatColor.valueOf(team)}")
+                    .replace("%team_color", MessageHelper.getColorCode(team))
                     .replace("%player_name", offlinePlayer.name)
                     .replace("%own", if (self) Config.values.playerGuiOwnItem else "")
             )))
@@ -82,7 +82,7 @@ object PlayerListGui {
                                 .replace("%resource_gold", "${matchPlayerData.resGold}")
                                 .replace("%resource_diamond", "${matchPlayerData.resDiamond}")
                                 .replace("%resource_emerald", "${matchPlayerData.resEmerald}")
-                                .replace("%play_time", "${matchPlayerData.playTime}")
+                                .replace("%play_time", TimeUtil.formatDuration(matchPlayerData.playTime))
                                 .replace("%status", status)
                         )
                     )

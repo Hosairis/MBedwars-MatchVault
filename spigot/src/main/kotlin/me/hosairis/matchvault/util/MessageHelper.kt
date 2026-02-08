@@ -6,6 +6,29 @@ import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 
 object MessageHelper {
+
+    private val colorMap = mapOf(
+        "YELLOW" to "&e",
+        "ORANGE" to "&6",
+        "RED" to "&c",
+        "BLUE" to "&9",
+        "LIGHT_BLUE" to "&b",
+        "CYAN" to "&3",
+        "GREEN" to "&a",
+        "DARK_GREEN" to "&2",
+        "PURPLE" to "&5",
+        "PINK" to "&d",
+        "WHITE" to "&f",
+        "GRAY" to "&7",
+        "DARK_GRAY" to "&8",
+        "BROWN" to "&4",
+        "BLACK" to "&0",
+    )
+
+    fun getColorCode(colorName: String): String {
+        return colorMap[colorName]!!
+    }
+
     fun colorize(input: String): String {
         return ChatColor.translateAlternateColorCodes('&', input)
     }

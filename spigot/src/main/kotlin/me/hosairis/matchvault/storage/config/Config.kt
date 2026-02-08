@@ -21,6 +21,10 @@ object Config : AbstractConfig("config.yml") {
         val databaseName: String,
         val databaseParameters: String,
 
+        val dateFormat: String,
+        val durationIncludeMillis: Boolean,
+        val durationShortFormat: Boolean,
+
         val guiBorderItemType: String,
         val guiBackItemType: String,
         val guiBackItemTitle: String,
@@ -77,8 +81,8 @@ object Config : AbstractConfig("config.yml") {
             "bedwars:final_kills",
             "bedwars:deaths",
             "bedwars:beds_destroyed",
-            "bedwars:top_kill_streak",  //TODO
-            "bedwars:play_time"         //TODO
+            "bedwars:top_kill_streak",
+            "bedwars:play_time"
         ),
 
         serverName = "unknown",
@@ -90,6 +94,10 @@ object Config : AbstractConfig("config.yml") {
         databasePassword = "Admin@123",
         databaseName = "matchvault",
         databaseParameters = "?useSSL=false&allowMultiQueries=true",
+
+        dateFormat = "yyyy/MM/dd - hh:mm a",
+        durationIncludeMillis = false,
+        durationShortFormat = true,
 
         guiBorderItemType = "black_stained_glass_pane",
         guiBackItemType = "barrier",
@@ -148,8 +156,8 @@ object Config : AbstractConfig("config.yml") {
                 "bedwars:final_kills",
                 "bedwars:deaths",
                 "bedwars:beds_destroyed",
-                "bedwars:top_kill_streak",  //TODO
-                "bedwars:play_time"         //TODO
+                "bedwars:top_kill_streak",
+                "bedwars:play_time"
             ),
 
             serverName = doc.getString("server-name"),
@@ -161,6 +169,10 @@ object Config : AbstractConfig("config.yml") {
             databasePassword = doc.getString("database.password"),
             databaseName = doc.getString("database.name"),
             databaseParameters = doc.getString("database.parameters"),
+
+            dateFormat = doc.getString("date.format"),
+            durationIncludeMillis = doc.getBoolean("duration.include-millisecond"),
+            durationShortFormat = doc.getBoolean("duration.short-format"),
 
             guiBorderItemType = doc.getString("gui.global.border-item.type"),
             guiBackItemType = doc.getString("gui.global.back-item.type"),

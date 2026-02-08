@@ -68,7 +68,7 @@ object TeamListGui {
             .from(material)
             .name(Component.text(MessageHelper.colorize(
                 Config.values.teamGuiItemName
-                    .replace("%team_color", "${ChatColor.valueOf(teamData.team)}")
+                    .replace("%team_color", MessageHelper.getColorCode(teamData.team))
                     .replace("%team_name", teamData.team.lowercase().replaceFirstChar { it.uppercase() })
             )))
             .glow(if (Config.values.teamGuiItemGlow) ownTeam else false)

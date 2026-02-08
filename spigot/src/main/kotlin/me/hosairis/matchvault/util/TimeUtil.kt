@@ -1,5 +1,6 @@
 package me.hosairis.matchvault.util
 
+import me.hosairis.matchvault.storage.config.Config
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -11,15 +12,15 @@ object TimeUtil {
         epochMillis: Long
     ): String {
         val zonedDateTime: ZonedDateTime = Instant.ofEpochMilli(epochMillis).atZone(ZoneId.systemDefault())
-        val formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd - hh:mm a")
+        val formatter = DateTimeFormatter.ofPattern(Config.values.dateFormat)
 
         return zonedDateTime.format(formatter)
     }
 
     fun formatDuration(
         millis: Long,
-        includeMillis: Boolean = false,
-        shortFormat: Boolean = true
+        includeMillis: Boolean = Config.values.durationIncludeMillis,
+        shortFormat: Boolean = Config.values.durationShortFormat
     ): String {
         val seconds = millis / 1000
         val minutes = seconds / 60

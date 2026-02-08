@@ -9,6 +9,12 @@ database:
   name: "matchvault"
   parameters: "?useSSL=false&allowMultiQueries=true"
 
+date:
+  format: "yyyy/MM/dd - hh:mm a"
+duration:
+  include-millisecond: false
+  short-format: true
+
 gui:
   global:
     border-item:
