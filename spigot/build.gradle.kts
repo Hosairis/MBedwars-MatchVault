@@ -21,7 +21,7 @@ dependencies {
 
     zap(libs.boostedyaml)
     zap(libs.caffeine)
-    zap(libs.hikaricp) { exclude("org.slf4j") }
+    zap(libs.hikaricp)
     zap(libs.exposed.core)
     zap(libs.exposed.jdbc)
     zap(libs.mariadb.java.client)
@@ -64,6 +64,7 @@ tasks {
 
     shadowJar {
         relocate("org.bstats", "me.hosairis.matchvault.libs.bstats")
+        relocate("dev.dejvokep.boostedyaml", "me.hosairis.matchvault.libs.boostedyaml")
 
         archiveFileName.set("${rootProject.name}-${project.version}.jar")
         minimize()
