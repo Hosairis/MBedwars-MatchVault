@@ -7,6 +7,7 @@ import de.marcely.bedwars.api.event.player.PlayerPickupDropEvent
 import de.marcely.bedwars.api.event.player.PlayerStatChangeEvent
 import me.hosairis.matchvault.MatchVault
 import me.hosairis.matchvault.storage.config.Config
+import me.hosairis.matchvault.storage.database.cache.MatchCache
 import me.hosairis.matchvault.util.CoroutineHelper
 import me.hosairis.matchvault.util.Log
 import me.hosairis.matchvault.storage.database.service.MatchService
@@ -28,20 +29,21 @@ class PlayerStatsListener : Listener {
         if (!event.stats.isGameStats) return
         if (event.key !in Config.values.allowedStats) return
 
-        val player = Bukkit.getPlayer(event.stats.playerUUID) ?: return
-        val uuid = player.uniqueId
-        val arena = BedwarsAPI.getGameAPI().getArenaByPlayer(player) ?: return
+        val uuid = event.stats.playerUUID
+        val arenaId = MatchCache.getId(uuid) ?: return
+        val stat = event.key
+        val value = event.newValue.toInt()
 
         CoroutineHelper.runAsync {
             try {
                 MatchService.updateMatchPlayerStat(
-                    arena = arena,
-                    playerUuid = player.uniqueId,
-                    statKey = event.key,
-                    newValue = event.newValue.toInt()
+                    arenaId = arenaId,
+                    playerUuid = uuid,
+                    statKey = stat,
+                    newValue = value
                 )
             } catch (ex: Exception) {
-                Log.severe("PlayerStatChangeEvent: error for ${player.name} ($uuid) matchId=${arena.name}: ${ex.message}")
+                Log.severe("PlayerStatChangeEvent: error for ${uuid} ($uuid) matchId=${arenaId}: ${ex.message}")
                 ex.printStackTrace()
             }
         }

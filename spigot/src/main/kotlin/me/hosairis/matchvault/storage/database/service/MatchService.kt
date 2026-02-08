@@ -103,7 +103,7 @@ object MatchService {
                 val mp = matchPlayerRepo.readByMatchIdAndPlayerId(matchData.id, playerId) ?: continue
 
                 if (!mp.won) {
-                    matchPlayerRepo.update(mp.copy(won = true))
+                    matchPlayerRepo.updatePartial(id = mp.id!!, won = true)
                 }
             }
         }
@@ -174,17 +174,15 @@ object MatchService {
     }
 
     fun updateMatchPlayerStat(
-        arena: Arena,
+        arenaId: Long,
         playerUuid: UUID,
         statKey: String,
         newValue: Int
     ): Boolean = transaction {
 
-        val matchData = MatchCache.getId(arena)?.let { id ->
-            matchRepo.read(id)
-        } ?: return@transaction false
-        val playerId = playerRepo.readByUuid(playerUuid)?.id ?: return@transaction false
-        val matchPlayerData = matchPlayerRepo.readByMatchIdAndPlayerId(matchData.id!!, playerId) ?: return@transaction false
+        val matchData = matchRepo.read(arenaId) ?: return@transaction false
+        val playerId = playerRepo.readIdByUuid(playerUuid) ?: return@transaction false
+        val matchPlayerData = matchPlayerRepo.readByMatchIdAndPlayerId(matchData.id!!, playerId, true) ?: return@transaction false
 
         when (statKey) {
             "bedwars:kills" -> matchPlayerRepo.updatePartial(id = matchPlayerData.id!!, kills = newValue)

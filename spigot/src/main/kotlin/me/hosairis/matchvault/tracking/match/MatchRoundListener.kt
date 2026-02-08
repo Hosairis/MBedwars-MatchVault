@@ -2,6 +2,8 @@ package me.hosairis.matchvault.tracking.match
 
 import de.marcely.bedwars.api.event.arena.RoundEndEvent
 import de.marcely.bedwars.api.event.arena.RoundStartEvent
+import de.marcely.bedwars.api.player.DefaultPlayerStatSet
+import de.marcely.bedwars.api.player.PlayerDataAPI
 import me.hosairis.matchvault.storage.database.cache.MatchHistoryCache
 import me.hosairis.matchvault.util.CoroutineHelper
 import me.hosairis.matchvault.util.Log
@@ -23,7 +25,7 @@ class MatchRoundListener: Listener {
 
         CoroutineHelper.runAsync {
             try {
-                val matchId = MatchService.startMatch(
+                MatchService.startMatch(
                     arena = arena,
                     arenaName = arenaName,
                     mode = mode,
@@ -45,7 +47,18 @@ class MatchRoundListener: Listener {
         val endedAt = System.currentTimeMillis()
         val isTie = event.isTie
         val winnerTeamName = event.winnerTeam?.name
-        val winnersUuids = event.winners.map { it.uniqueId }
+        val winnersUuids = event.winners.map { it.uniqueId } + event.quitWinners.map { it.uniqueId }
+        val allPlayers =
+            event.winners.map { it.name to it.uniqueId } +
+            event.quitWinners.map { it.username to it.uniqueId } +
+            event.losers.map { it.name to it.uniqueId } +
+            event.quitLosers.map { it.username to it.uniqueId }
+
+        allPlayers.forEach { (_, uuid) ->
+            PlayerDataAPI.get().getStats(uuid) {
+                DefaultPlayerStatSet.PLAY_TIME.getDisplayedValue(it)
+            }
+        }
 
         CoroutineHelper.runAsync {
             try {
@@ -62,7 +75,8 @@ class MatchRoundListener: Listener {
             }
         }
 
-        event.losers.forEach { MatchHistoryCache.removeMatchList(it.name) }
-        event.winners.forEach { MatchHistoryCache.removeMatchList(it.name) }
+        allPlayers.forEach { (name, _) ->
+            MatchHistoryCache.removeMatchList(name)
+        }
     }
 }
