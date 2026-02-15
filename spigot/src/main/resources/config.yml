@@ -1,6 +1,8 @@
+# Used to track which match played on which server
 server-name: "unknown"
+
+# Only MySQL, MariaDB, H2 and SQLite are supported
 database:
-  # MySQL, MariaDB, H2, SQLite
   type: "H2"
   host: "localhost"
   port: 3306
@@ -13,34 +15,47 @@ date:
   format: "yyyy/MM/dd - hh:mm a"
 duration:
   include-millisecond: false
+  # Hours -> h, Minutes -> min, Seconds -> sec
   short-format: true
 
 gui:
+  # Settings that effect all the guis
   global:
+    # Item used to fill border
     border-item:
       type: "black_stained_glass_pane"
+    # Item used to go back
     back-item:
       type: "barrier"
       title: "&4Back"
+  # Settings related to match list gui
   match-list:
     title: "&bMatchList"
+    # Button used to scroll to previous page
     previous-item:
       type: "arrow"
       title: "&4Previous"
       slot: 17
+    # Button used to scroll to next page
     next-item:
       type: "arrow"
       title: "&aNext"
       slot: 44
     placeholders:
       finish:
+        # This will be placed when timestamp of when a match has ended is null
         if-null: "N/A"
       duration:
+        # This will be placed when timestamp of how long a match was is null
         if-null: "N/A"
       status:
+        # If match is won
         if-won: "&aWin"
+        # If match is lost
         if-lost: "&4Lose"
+        # If match was aborted
         if-aborted: "&6Aborted"
+    # Settings related to item used to represent each match
     match-item:
       name: "&b%arena_name"
       lore:
@@ -60,16 +75,21 @@ gui:
         lost: "red_terracotta"
         on-going: "blue_terracotta"
         aborted: "yellow_terracotta"
+  # Settings related to team list gui
   team-list:
     title: "&bTeam List"
     back-item-slot: 0
     placeholders:
       bed-destruction:
+        # This will be placed when timestamp of when the bed of a team is destroyed is null
         if-null: "N/A"
       elimination:
+        # This will be placed when timestamp of when a team got eliminated is null
         if-null: "N/A"
       final-placement:
+        # This will be placed when final placement of a team is null
         if-null: "N/A"
+    # Settings related to item used to represent each team
     match-item:
       name: "%team_color%team_name"
       glow-own: true
@@ -82,14 +102,19 @@ gui:
         - "    &f%elimination_time"
         - "&r"
         - "&7Final Placement: %final_placement"
+  # Settings related to player list gui
   player-list:
     title: "&bPlayer List"
     back-item-slot: 0
     placeholders:
       status:
+        # If player is winner of the match
         if-win: "&aWinner"
+        # If player is loser of the match
         if-lose: "&4Loser"
+      # This will be added to the title of the player item is you are the player being represented
       own-item: "&7(YOU)"
+    # Settings related to item used to represent each player
     match-item:
       name: "%team_color%player_name %own"
       lore:
@@ -108,9 +133,6 @@ gui:
         - "&7Spawner Emerald Collected: &f%resource_emerald_spawner"
         - "&7Total Time Played: &f%play_time"
         - "&7Status: %status"
-
-
-
 
 # DO NOT EDIT!
 config-version: 1
