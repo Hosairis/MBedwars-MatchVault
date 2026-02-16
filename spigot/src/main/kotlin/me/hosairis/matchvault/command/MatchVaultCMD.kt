@@ -25,12 +25,12 @@ class MatchVaultCMD: CommandExecutor, TabCompleter {
         }
 
         if (args[0].equals("reload", true) || args[0].equals("rl", true)) {
-            if (!sender.hasPermission("mva.commands.reload")) {
+            if (!sender.hasPermission("matchvault.commands.reload")) {
                 MessageHelper.sendMessage(
                     sender,
                     Messages.values.insufficientPermissions.replace(
                         "%permission",
-                        "mva.commands.reload",
+                        "matchvault.commands.reload",
                     )
                 )
                 return true
@@ -55,11 +55,16 @@ class MatchVaultCMD: CommandExecutor, TabCompleter {
     ): List<String> {
         if (args.size == 1) {
             val completions = mutableListOf<String>()
-            if (sender.hasPermission("mva.commands.reload")) {
+
+            if (sender.hasPermission("matchvault.commands.reload")) {
                 completions.add("reload")
             }
-            return completions.filter { it.startsWith(args[0], ignoreCase = true) }.toMutableList()
+
+            return completions.filter {
+                it.startsWith(args[0], true)
+            }
         }
-        return mutableListOf()
+
+        return emptyList()
     }
 }

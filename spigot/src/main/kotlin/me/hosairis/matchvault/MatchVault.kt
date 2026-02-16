@@ -1,5 +1,6 @@
 package me.hosairis.matchvault
 
+import de.marcely.bedwars.api.BedwarsAPI
 import me.hosairis.matchvault.command.MatchHistoryCMD
 import me.hosairis.matchvault.command.MatchVaultCMD
 import me.hosairis.matchvault.storage.config.Config
@@ -12,6 +13,7 @@ import me.hosairis.matchvault.tracking.match.MatchRoundListener
 import me.hosairis.matchvault.tracking.player.PlayerSessionListener
 import me.hosairis.matchvault.tracking.player.PlayerStatsListener
 import me.hosairis.matchvault.tracking.purchase.PurchaseListener
+import me.hosairis.matchvault.util.Log
 import me.hosairis.matchvault.util.MessageHelper
 import org.bstats.bukkit.Metrics
 import revxrsal.zapper.ZapperJavaPlugin
@@ -53,7 +55,7 @@ class MatchVault: ZapperJavaPlugin() {
     }
 
     private fun registerEntrypoints() {
-        // tracking listeners (inject services)
+        // tracking listeners
         server.pluginManager.registerEvents(PlayerSessionListener(), this)
         server.pluginManager.registerEvents(PlayerStatsListener(), this)
         server.pluginManager.registerEvents(MatchRoundListener(), this)
@@ -62,6 +64,14 @@ class MatchVault: ZapperJavaPlugin() {
 
         // command wiring
         getCommand("matchvault").executor = MatchVaultCMD()
-        getCommand("matchhistory").executor = MatchHistoryCMD()
+
+        val historyCmd = BedwarsAPI.getRootCommandsCollection().addCommand("matches") ?: run {
+            Log.severe("Command /bw matches already exists (or couldn't be added).")
+            return
+        }
+        historyCmd.usage = "[arg1]"
+        historyCmd.permission = "matchvault.commands.history"
+        historyCmd.setAliases("matchlist", "matchhistory")
+        historyCmd.handler = MatchHistoryCMD()
     }
 }

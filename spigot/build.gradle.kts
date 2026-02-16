@@ -83,27 +83,20 @@ bukkitPluginYaml {
             usage = "/matchvault <subcommand>"
             aliases.addAll(listOf("mvault", "matchv", "mva", "mava"))
         }
-
-        create("matchhistory") {
-            description = "Command for viewing bedwars match history"
-            usage = "/matchhistory [player]"
-            permission = "mva.commands.history"
-            permissionMessage = "%prefix &7You lack the required permission: &cmva.commands.history"
-        }
     }
 
     permissions {
-        create("mva.commands.reload") {
+        create("matchvault.commands.reload") {
             default = Permission.Default.OP
         }
 
-        create("mva.commands.history") {
+        create("matchvault.commands.history") {
             default = Permission.Default.OP
         }
 
-        create("mva.commands.history.others") {
+        create("matchvault.commands.history.others") {
             default = Permission.Default.OP
-            children.set(mapOf("mva.commands.history" to true))
+            children.set(mapOf("matchvault.commands.history" to true))
         }
     }
 }
