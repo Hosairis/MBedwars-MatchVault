@@ -40,7 +40,7 @@ object PlayerListGui {
     private fun createGui(): Gui {
         val gui = Gui
             .gui()
-            .title(Component.text(Config.values.playerGuiTitle))
+            .title(Component.text(MessageHelper.colorize(Config.values.playerGuiTitle)))
             .rows(6)
             .disableAllInteractions()
             .create()

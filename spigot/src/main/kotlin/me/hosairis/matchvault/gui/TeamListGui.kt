@@ -40,7 +40,7 @@ object TeamListGui {
     private fun createGui(): Gui {
         val gui = Gui
             .gui()
-            .title(Component.text(Config.values.teamGuiTitle))
+            .title(Component.text(MessageHelper.colorize(Config.values.teamGuiTitle)))
             .rows(6)
             .disableAllInteractions()
             .create()
