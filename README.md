@@ -79,7 +79,7 @@ MatchVault supports the following databases:
 - **H2** (Recommended)
 - **SQLite**
 
-> H2 is recommended over SQLite for better performance and reliability.
+> If local storage is intended to be used, H2 is recommended over SQLite for better performance and reliability.
 
 ---
 
