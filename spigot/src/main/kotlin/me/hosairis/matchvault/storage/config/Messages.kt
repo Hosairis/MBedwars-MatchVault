@@ -14,6 +14,7 @@ object Messages : AbstractConfig("messages.yml") {
         val reloadFailed: String,
         val insufficientPermissions: String,
         val consoleProhibitedCommand: String,
+        val updateFound: String,
 
         val configVersion: Int,
     )
@@ -28,6 +29,7 @@ object Messages : AbstractConfig("messages.yml") {
         reloadFailed = "%prefix &c✖ &7Reload &cFailed",
         insufficientPermissions = "%prefix &c✖ &7You lack the required permission: &c%permission",
         consoleProhibitedCommand = "%prefix &c✖ &7Console is not allowed to execute this command",
+        updateFound = "%prefix &c⚠ &7New update is available. Please &aUpdate &7to the latest version.",
 
         configVersion =  1,
     )
@@ -43,6 +45,7 @@ object Messages : AbstractConfig("messages.yml") {
             reloadFailed = setPlaceHolders(doc.getString("reload-failed")),
             insufficientPermissions = setPlaceHolders(doc.getString("insufficient-permissions")),
             consoleProhibitedCommand = setPlaceHolders(doc.getString("console-prohibited-command")),
+            updateFound = setPlaceHolders(doc.getString("update-found")),
 
             configVersion = doc.getInt("config-version"),
         )

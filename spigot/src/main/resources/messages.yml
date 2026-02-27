@@ -6,6 +6,7 @@ reload-success: "%prefix &a✔ &7Reload &aSuccessful"
 reload-failed: "%prefix &c✖ &7Reload &cFailed"
 insufficient-permissions: "%prefix &c✖ &7You lack the required permission: &c%permission"
 console-prohibited-command: "%prefix &c✖ &7Console is not allowed to execute this command"
+update-found: "%prefix &c⚠ &7New update is available. Please &aUpdate &7to the latest version."
 
 # DO NOT EDIT!
 config-version: 1

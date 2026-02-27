@@ -43,21 +43,22 @@ Also tracks:
 
 ## Commands
 
-| Command | Description |
-|----------|------------|
-| `/matchvault` | Main command |
-| `/matchvault reload` | Reload configuration |
+| Command                | Description                                     |
+|------------------------|-------------------------------------------------|
+| `/matchvault`          | Main command                                    |
+| `/matchvault reload`   | Reload configuration                            |
 | `/bw matches [player]` | View your own or another player's match history |
 
 ---
 
 ## Permissions
 
-| Permission | Description |
-|------------|------------|
-| `matchvault.commands.history` | View your own history |
-| `matchvault.commands.history.others` | View other players' history |
-| `matchvault.commands.reload` | Reload configuration |
+| Permission                           | Description                  |
+|--------------------------------------|------------------------------|
+| `matchvault.commands.history`        | View your own history        |
+| `matchvault.commands.history.others` | View other players' history  |
+| `matchvault.commands.reload`         | Reload configuration         |
+| `matchvault.events.notifyupdate`     | Recieve update notifications |
 
 ---
 

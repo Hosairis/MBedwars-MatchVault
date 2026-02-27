@@ -13,6 +13,8 @@ import me.hosairis.matchvault.tracking.match.MatchRoundListener
 import me.hosairis.matchvault.tracking.player.PlayerSessionListener
 import me.hosairis.matchvault.tracking.player.PlayerStatsListener
 import me.hosairis.matchvault.tracking.purchase.PurchaseListener
+import me.hosairis.matchvault.update.UpdateChecker
+import me.hosairis.matchvault.update.listener.JoinListener
 import me.hosairis.matchvault.util.Log
 import me.hosairis.matchvault.util.MessageHelper
 import org.bstats.bukkit.Metrics
@@ -41,6 +43,7 @@ class MatchVault: ZapperJavaPlugin() {
         MatchService.abortOngoingMatchesOnStartup(Config.values.serverName)
 
         metrics = Metrics(this, 27239)
+        UpdateChecker.start(this, this.description.version)
 
         MessageHelper.printSplashScreen()
     }
@@ -61,6 +64,9 @@ class MatchVault: ZapperJavaPlugin() {
         server.pluginManager.registerEvents(MatchRoundListener(), this)
         server.pluginManager.registerEvents(EliminationsListener(), this)
         server.pluginManager.registerEvents(PurchaseListener(), this)
+
+        // update listeners
+        server.pluginManager.registerEvents(JoinListener(), this)
 
         // command wiring
         getCommand("matchvault").executor = MatchVaultCMD()
